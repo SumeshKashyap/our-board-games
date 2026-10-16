@@ -14,6 +14,7 @@ Play against the computer at five difficulty levels, solve puzzles, and learn us
 - **Easy on the eyes**: large, bold, high-contrast pieces on a soft, low-glare board; large text and buttons with words, not just icons.
 - **Simple to play**: tap a piece, then tap where it should go (dragging works too). Legal moves are shown as dots, and the computer's last move stays highlighted.
 - **Player profiles**: each family member enters just their name. Their level, puzzle progress, finished lessons and game in progress are remembered.
+- **Family photos**: the app opens with three random family pictures, and every player can add their own (kept privately on the device).
 - **Five difficulty levels**, from *Beginner* to *Expert*, powered by [Stockfish](https://stockfishchess.org) and scaled to the player.
 - **Puzzles**: 600 hand-picked puzzles (120 per level) from the [Lichess puzzle database](https://database.lichess.org/#puzzles), with hints and solutions.
 - **Learn moves**: interactive lessons on castling, promotion, en passant, forks, pins, skewers and back-rank mate.
@@ -24,6 +25,7 @@ Play against the computer at five difficulty levels, solve puzzles, and learn us
 
 Download the latest `OurChess-vX.Y.Z.apk` from the **[Releases](../../releases)** page and open it on your Android device
 (Android 8.0 or newer, 64-bit ARM). You may need to allow "Install unknown apps" for your browser or file manager.
+Step-by-step instructions for family members: **[docs/install-guide.md](docs/install-guide.md)**.
 
 > Release APKs built on GitHub show a plain loading screen. The family edition with private photos is built
 > locally; see [docs/releasing.md](docs/releasing.md).
@@ -45,6 +47,7 @@ Full setup instructions: **[docs/development.md](docs/development.md)**.
 
 | Document | What's in it |
 |---|---|
+| [docs/install-guide.md](docs/install-guide.md) | How family members install and update the app |
 | [docs/requirements.md](docs/requirements.md) | What the app must do and why, and who it is for |
 | [docs/architecture.md](docs/architecture.md) | How the code is organised and how the pieces fit together |
 | [docs/development.md](docs/development.md) | Setting up a computer, building, testing, running on a device |

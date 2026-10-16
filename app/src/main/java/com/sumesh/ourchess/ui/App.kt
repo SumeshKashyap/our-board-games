@@ -8,7 +8,16 @@ import com.sumesh.ourchess.tutorials.Lessons
 import com.sumesh.ourchess.ui.game.GameScreen
 import com.sumesh.ourchess.ui.game.GameViewModel
 import com.sumesh.ourchess.ui.level.LevelScreen
-import com.sumesh.ourchess.ui.loading.LoadingScreen
+import com.sumesh.ourchess.ui.loading.LoadingOverlay
+import com.sumesh.ourchess.ui.loading.PhotoBackdrop
+import com.sumesh.ourchess.ui.photos.PhotosScreen
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Modifier
 import com.sumesh.ourchess.ui.menu.MenuScreen
 import com.sumesh.ourchess.ui.puzzles.PuzzleScreen
 import com.sumesh.ourchess.ui.puzzles.PuzzleViewModel
@@ -23,13 +32,23 @@ fun App(app: AppViewModel = viewModel()) {
 
     val profile = app.current
     when (val screen = app.screen) {
-        Screen.Loading -> LoadingScreen(isReady = app.isReady, onDone = app::finishLoading)
-        Screen.Welcome -> WelcomeScreen(
-            profiles = app.profiles,
-            onCreate = app::createProfile,
-            onChoose = app::choose,
-            onDelete = app::deleteProfile,
-        )
+        // The start-up photos stay behind the welcome screen, fading from bright to a soft background.
+        Screen.Loading, Screen.Welcome -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            val loading = screen == Screen.Loading
+            PhotoBackdrop(app.startupPhotos, dimmed = !loading)
+            Crossfade(loading, animationSpec = tween(1500), label = "start") { showLoading ->
+                if (showLoading) {
+                    LoadingOverlay(hasPhotos = app.startupPhotos.isNotEmpty(), isReady = app.isReady, onDone = app::finishLoading)
+                } else {
+                    WelcomeScreen(
+                        profiles = app.profiles,
+                        onCreate = app::createProfile,
+                        onChoose = app::choose,
+                        onDelete = app::deleteProfile,
+                    )
+                }
+            }
+        }
         Screen.Level -> LevelScreen(
             name = profile?.name.orEmpty(),
             current = profile?.level ?: 1,
@@ -42,6 +61,8 @@ fun App(app: AppViewModel = viewModel()) {
             onPlay = { app.open(Screen.Game) },
             onPuzzles = { app.open(Screen.Puzzles) },
             onLessons = { app.open(Screen.Lessons) },
+            photoCount = app.photosVersion.let { app.photosOf(profile).size },
+            onPhotos = { app.open(Screen.Photos) },
             onChangeLevel = { app.open(Screen.Level) },
             onSwitchPlayer = app::switchPlayer,
         )
@@ -70,6 +91,14 @@ fun App(app: AppViewModel = viewModel()) {
             }
             PuzzleScreen(vm = vm, level = p.level, solvedCount = p.puzzlesSolved, onBack = app::back)
         }
+        Screen.Photos -> PhotosScreen(
+            photos = app.photosVersion.let { profile?.let(app::photosOf).orEmpty() },
+            repository = app.photos,
+            adding = app.addingPhotos,
+            onAdd = app::addPhotos,
+            onRemove = app::removePhoto,
+            onBack = app::back,
+        )
         Screen.Lessons -> LessonListScreen(
             done = profile?.lessonsDone.orEmpty(),
             onOpen = { app.open(Screen.Lesson(it.id)) },

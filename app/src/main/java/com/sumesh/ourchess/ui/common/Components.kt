@@ -61,11 +61,11 @@ object StatusColors {
 
 /** Full-screen page background with safe-area padding. */
 @Composable
-fun Page(content: @Composable () -> Unit) {
+fun Page(background: Color = MaterialTheme.colorScheme.background, content: @Composable () -> Unit) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(background)
             .safeDrawingPadding()
             .padding(12.dp),
     ) { content() }
@@ -73,8 +73,8 @@ fun Page(content: @Composable () -> Unit) {
 
 /** A scrolling page for menus and lists, kept to a comfortable reading width on tablets. */
 @Composable
-fun MenuPage(content: @Composable ColumnScope.() -> Unit) {
-    Page {
+fun MenuPage(background: Color = MaterialTheme.colorScheme.background, content: @Composable ColumnScope.() -> Unit) {
+    Page(background) {
         Column(
             Modifier
                 .fillMaxSize()

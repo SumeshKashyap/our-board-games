@@ -3,6 +3,10 @@ package com.sumesh.ourchess.ui.menu
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -26,6 +30,8 @@ fun MenuScreen(
     onPlay: () -> Unit,
     onPuzzles: () -> Unit,
     onLessons: () -> Unit,
+    photoCount: Int,
+    onPhotos: () -> Unit,
     onChangeLevel: () -> Unit,
     onSwitchPlayer: () -> Unit,
 ) {
@@ -62,6 +68,14 @@ fun MenuScreen(
             subtitle = "${profile.lessonsDone.size} of ${Lessons.all.size} lessons done",
             onClick = onLessons,
             leading = { PieceIcon(Side.WHITE, PieceType.PAWN) },
+        )
+        ChoiceCard(
+            title = "My photos",
+            subtitle = if (photoCount > 0) "$photoCount photos · shown when the app starts" else "Add pictures to show when the app starts",
+            onClick = onPhotos,
+            leading = {
+                Icon(Icons.Filled.Face, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(56.dp))
+            },
         )
         OutlinedButton(onClick = onSwitchPlayer, modifier = Modifier.fillMaxWidth()) {
             Text("Switch player", style = MaterialTheme.typography.labelLarge)

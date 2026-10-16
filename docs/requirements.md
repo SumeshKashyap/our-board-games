@@ -25,14 +25,20 @@ conflicts with something here, update this document deliberately rather than dri
 
 ### Starting the app
 - **Loading screen** shows family photos as the background, with the app name **"Our Chess"**,
-  while the app gets ready (engine start-up, puzzle loading). It moves on by itself, or immediately when tapped.
-  - On landscape tablets, several photos are shown side by side; on phones, they cross-fade one at a time.
-  - The photos are **private**: they must never be uploaded to the public repository or public releases (see below).
+  while the app gets ready (engine start-up, puzzle loading).
+  - Each launch shows **3 photos chosen at random** from all available photos: the bundled family photos plus
+    every player's own photos.
+  - On landscape tablets the three are shown side by side; on phones they cross-fade one after another.
+  - They stay at full brightness for **5 seconds**, then **slowly fade** into a soft background behind the
+    player-selection screen. Tapping skips ahead.
+  - The bundled photos are **private**: they must never be uploaded to the public repository or public releases (see below).
 
 ### Profiles
 - First launch: a gentle welcome that asks only for the player's **name**.
 - Later launches: **choose an existing player** or **create a new one**. Players can be removed (with confirmation).
 - Each profile automatically remembers its difficulty level, puzzle progress, finished lessons and game in progress.
+- **My photos**: each player can add their own pictures (from the device's photo picker) or remove them. These join
+  the pool of start-up photos. They are resized and stored privately on the device; nothing is uploaded.
 
 ### Difficulty
 - After choosing a profile, the player picks a **difficulty level from 1 to 5**
@@ -45,7 +51,7 @@ After choosing the level, the player chooses one of:
 2. **Puzzles**: chess puzzles to solve.
 3. **Learn moves**: tutorials that teach useful moves.
 
-The menu also offers *Change level* and *Switch player*.
+The menu also offers *My photos*, *Change level* and *Switch player*.
 
 ### Playing against the computer
 - Only human-vs-computer play (no two-player or online modes for now).

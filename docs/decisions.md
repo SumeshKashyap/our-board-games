@@ -50,6 +50,11 @@ The repository is public, but the family photos on the loading screen are git-ig
 built on the owner's computer. Public release APKs show a plain loading screen. This keeps pictures of family members
 (including a young child) off the internet.
 
-### 13. Releases from git tags via GitHub Actions
+### 13. Players add their own photos on the device
+Rather than rebuilding the app to change pictures, each player can add photos through Android's photo picker.
+They stay on the device and join the random start-up selection, which also gives public-release installs
+personal photos without anything being uploaded.
+
+### 14. Releases from git tags via GitHub Actions
 Pushing `vX.Y.Z` builds, tests, signs and publishes an APK, so releases are repeatable and the version always
 matches the tag. The signing key is stored as encrypted GitHub secrets, with a backup on the owner's computer.

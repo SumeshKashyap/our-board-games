@@ -75,6 +75,8 @@ class ScreenshotTest {
 
     @Test fun lesson() { app { withPlayers(); open(Screen.Lesson("fork")) }; capture("07_lesson_fork") }
 
+    @Test fun photos() { app { withPlayers(); open(Screen.Photos) }; capture("12_photos") }
+
     @Test @Config(qualifiers = TABLET)
     fun menuTablet() { app { withPlayers() }; capture("08_menu_tablet") }
 

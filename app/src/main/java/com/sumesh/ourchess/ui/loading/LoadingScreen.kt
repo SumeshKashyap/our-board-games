@@ -1,8 +1,7 @@
 package com.sumesh.ourchess.ui.loading
 
-import android.content.Context
-import android.graphics.BitmapFactory
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,37 +32,66 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sumesh.ourchess.game.PieceType
 import com.sumesh.ourchess.game.Side
 import com.sumesh.ourchess.ui.common.PieceIcon
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 
-private const val PHOTO_DIR = "loading"
-private const val SHOW_FOR_MS = 4_000L
-private const val SLIDE_MS = 2_000L
+/** How long the photos are shown at full brightness before moving on. */
+private const val SHOW_FOR_MS = 5_000L
+private const val FADE_MS = 2_000
+private const val SLIDE_MS = 1_700L
+
+/** Faces are usually in the upper part of a photo, so crop from slightly above the centre. */
+private val PhotoCrop = BiasAlignment(0f, -0.35f)
 
 /**
- * The opening screen: family photos (if bundled) behind the app name while the app gets ready.
- * Moves on by itself after a few seconds, or straight away when tapped.
+ * The start-up photos. Bright while loading; once [dimmed], they slowly fade into a soft background
+ * for the screen on top (choosing a player).
+ * Landscape shows the photos side by side; portrait shows them one after another.
  */
 @Composable
-fun LoadingScreen(isReady: Boolean, onDone: () -> Unit) {
-    val context = LocalContext.current
-    var photos by remember { mutableStateOf<List<ImageBitmap>?>(null) }
-    LaunchedEffect(Unit) { photos = withContext(Dispatchers.IO) { loadPhotos(context) } }
+fun PhotoBackdrop(photos: List<ImageBitmap>, dimmed: Boolean) {
+    if (photos.isEmpty()) return
+    val alpha by animateFloatAsState(if (dimmed) 0.2f else 1f, tween(FADE_MS), label = "backdrop")
+    BoxWithConstraints(Modifier.fillMaxSize().alpha(alpha)) {
+        if (maxWidth > maxHeight) {
+            Row(Modifier.fillMaxSize()) {
+                for (photo in photos) {
+                    Image(photo, null, Modifier.weight(1f).fillMaxHeight(), PhotoCrop, ContentScale.Crop)
+                }
+            }
+        } else {
+            var index by remember { mutableIntStateOf(0) }
+            LaunchedEffect(photos.size) {
+                while (photos.size > 1) {
+                    delay(SLIDE_MS)
+                    index = (index + 1) % photos.size
+                }
+            }
+            Crossfade(index, animationSpec = tween(700), label = "slideshow") { i ->
+                Image(photos[i % photos.size], null, Modifier.fillMaxSize(), PhotoCrop, ContentScale.Crop)
+            }
+        }
+    }
+}
 
+/**
+ * The title shown over the photos while the app gets ready. Moves on after a few seconds,
+ * or straight away when tapped (once ready).
+ */
+@Composable
+fun LoadingOverlay(hasPhotos: Boolean, isReady: Boolean, onDone: () -> Unit) {
     val done by rememberUpdatedState(onDone)
     var minTimePassed by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
@@ -72,37 +100,28 @@ fun LoadingScreen(isReady: Boolean, onDone: () -> Unit) {
     }
     LaunchedEffect(minTimePassed, isReady) { if (minTimePassed && isReady) done() }
 
-    BoxWithConstraints(
+    Box(
         Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary)
+            .then(if (hasPhotos) Modifier else Modifier.background(MaterialTheme.colorScheme.primary))
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
                 if (isReady) done()
             },
     ) {
-        val loaded = photos.orEmpty()
-        if (loaded.isNotEmpty()) {
-            // Landscape fits several portrait photos side by side; portrait shows one at a time.
-            val perSlide = if (maxWidth > maxHeight) minOf(3, loaded.size) else 1
-            Slideshow(loaded, perSlide)
+        if (hasPhotos) {
+            // Darken the lower part so the title is readable over any photo.
+            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color(0xCC000000))))
         }
-
-        // Darken the lower part so the title is readable over any photo.
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color(0xCC000000))),
-        )
         Column(
             Modifier
-                .align(if (loaded.isEmpty()) Alignment.Center else Alignment.BottomCenter)
+                .align(if (hasPhotos) Alignment.BottomCenter else Alignment.Center)
                 .fillMaxWidth()
                 .navigationBarsPadding()
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (loaded.isEmpty()) PieceIcon(Side.WHITE, PieceType.KING, 120.dp)
+            if (!hasPhotos) PieceIcon(Side.WHITE, PieceType.KING, 120.dp)
             Text("Our Chess", color = Color.White, fontSize = 52.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(4.dp))
             if (minTimePassed && !isReady) {
@@ -114,45 +133,5 @@ fun LoadingScreen(isReady: Boolean, onDone: () -> Unit) {
                 Text("A game for the whole family", color = Color.White, style = MaterialTheme.typography.titleMedium)
             }
         }
-    }
-}
-
-@Composable
-private fun Slideshow(photos: List<ImageBitmap>, perSlide: Int) {
-    var start by remember { mutableIntStateOf(0) }
-    LaunchedEffect(photos.size, perSlide) {
-        if (photos.size <= perSlide) return@LaunchedEffect
-        while (true) {
-            delay(SLIDE_MS)
-            start = (start + 1) % photos.size
-        }
-    }
-    Crossfade(targetState = start, animationSpec = tween(700), label = "slideshow") { first ->
-        Row(Modifier.fillMaxSize()) {
-            repeat(perSlide) { i ->
-                Image(
-                    bitmap = photos[(first + i) % photos.size],
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
-                )
-            }
-        }
-    }
-}
-
-/** Decodes the bundled photos, scaled down to roughly screen size to save memory. */
-private fun loadPhotos(context: Context): List<ImageBitmap> {
-    val names = context.assets.list(PHOTO_DIR)?.sorted().orEmpty()
-    return names.mapNotNull { name ->
-        runCatching {
-            val path = "$PHOTO_DIR/$name"
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            context.assets.open(path).use { BitmapFactory.decodeStream(it, null, bounds) }
-            var sample = 1
-            while (bounds.outWidth / (sample * 2) >= 1000) sample *= 2
-            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
-            context.assets.open(path).use { BitmapFactory.decodeStream(it, null, opts) }?.asImageBitmap()
-        }.getOrNull()
     }
 }

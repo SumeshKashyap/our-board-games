@@ -19,6 +19,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -56,7 +57,8 @@ fun WelcomeScreen(
     var toDelete by remember { mutableStateOf<Profile?>(null) }
     val showForm = creating || profiles.isEmpty()
 
-    MenuPage {
+    // Transparent, so the start-up photos show softly behind it.
+    MenuPage(background = Color.Transparent) {
         Spacer(Modifier.height(24.dp))
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             PieceIcon(Side.WHITE, PieceType.KING, 88.dp)
@@ -118,6 +120,11 @@ private fun NewProfileForm(onCreate: (String) -> Unit, onCancel: (() -> Unit)?) 
             placeholder = { Text("Your name", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Normal)) },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { if (valid) onCreate(name) }),
+            // Solid background so the photos behind this screen don't show through the text.
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
             modifier = Modifier.fillMaxWidth(),
         )
         Button(

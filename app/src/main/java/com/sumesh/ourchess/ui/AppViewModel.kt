@@ -5,18 +5,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import android.net.Uri
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.sumesh.ourchess.engine.Engines
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.sumesh.ourchess.data.PhotoRepository
 import com.sumesh.ourchess.data.Profile
 import com.sumesh.ourchess.data.ProfileRepository
 import com.sumesh.ourchess.data.SavedGame
 import com.sumesh.ourchess.data.SavedGameStore
+import com.sumesh.ourchess.data.pickRandom
+import com.sumesh.ourchess.engine.Engines
 import com.sumesh.ourchess.puzzles.Puzzle
 import com.sumesh.ourchess.puzzles.PuzzleRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 sealed interface Screen {
@@ -27,6 +34,7 @@ sealed interface Screen {
     data object Game : Screen
     data object Puzzles : Screen
     data object Lessons : Screen
+    data object Photos : Screen
     data class Lesson(val id: String) : Screen
 }
 
@@ -36,6 +44,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val repo = ProfileRepository(File(app.filesDir, "profiles.json"))
     private val savedGames = SavedGameStore(File(app.filesDir, "games"))
     private val allPuzzles: List<Puzzle> by lazy { PuzzleRepository.load(app.assets) }
+    val photos = PhotoRepository(app)
 
     /** Most recently used first. */
     var profiles by mutableStateOf(loadProfiles())
@@ -49,8 +58,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var isReady by mutableStateOf(false)
         private set
 
+    /** Three photos picked at random for this launch, from the family's and every player's own. */
+    var startupPhotos by mutableStateOf<List<ImageBitmap>>(emptyList())
+        private set
+
+    /** Bumped whenever a player's photos change, so screens re-read them. */
+    var photosVersion by mutableIntStateOf(0)
+        private set
+    var addingPhotos by mutableStateOf(false)
+        private set
+
     init {
         viewModelScope.launch {
+            val chosen = async(Dispatchers.IO) {
+                pickRandom(photos.all(profiles.map { it.id }), STARTUP_PHOTOS)
+                    .mapNotNull { photos.load(it, maxSize = 1400)?.asImageBitmap() }
+            }
+            startupPhotos = chosen.await()
             withContext(Dispatchers.IO) {
                 allPuzzles.size
                 runCatching { Engines.warmUp() }
@@ -89,6 +113,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun deleteProfile(profile: Profile) {
         repo.delete(profile.id)
         savedGames.deleteAll(profile.id)
+        photos.removeAll(profile.id)
         profiles = loadProfiles()
     }
 
@@ -127,6 +152,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         current = save(profile.copy(lessonsDone = profile.lessonsDone + id))
     }
 
+    fun photosOf(profile: Profile): List<File> = photos.forProfile(profile.id)
+
+    fun addPhotos(uris: List<Uri>) {
+        val profile = current ?: return
+        addingPhotos = true
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) { uris.forEach { photos.add(profile.id, it) } }
+            addingPhotos = false
+            photosVersion++
+        }
+    }
+
+    fun removePhoto(file: File) {
+        photos.remove(file)
+        photosVersion++
+    }
+
     private fun save(profile: Profile): Profile {
         repo.update(profile)
         profiles = loadProfiles()
@@ -134,4 +176,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun loadProfiles() = repo.load().sortedByDescending { it.lastUsed }
+
+    private companion object {
+        const val STARTUP_PHOTOS = 3
+    }
 }

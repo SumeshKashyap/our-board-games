@@ -26,7 +26,8 @@ Stockfish 19 opponent tuned per level, Hint button in games, natural "thinking" 
 - Game-over dialog with *Play again*
 - Material balance ("+3") next to captured pieces
 - Renamed to **Our Chess**, with a launcher icon
-- Loading screen with private family photos
+- Loading screen: 3 random photos for 5 seconds, then fading into the background of the player screen
+- *My photos*: each player can add their own pictures to the start-up photos
 - Documentation, GPL-3.0 licence, public GitHub repository
 - CI on every push; signed releases from version tags
 

@@ -112,5 +112,6 @@ Small JSON files in app-private storage, written atomically (write to a temp fil
 | `ExerciseSessionTest` | Correct/wrong moves, replies, hints, show-solution, alternative mates |
 | `GameViewModelTest` | Save/resume, game-over dialog, play again, material balance |
 | `ProfileRepositoryTest`, `SavedGameStoreTest` | Saving and reloading player data |
+| `PhotoRepositoryTest` | Adding (resized), removing photos; random picking of start-up photos |
 | `StockfishEngineTest` | Real Stockfish (desktop build): legal moves at every level, hints find mate, cancellation, level 4 beats level 1 |
 | `ScreenshotTest` | Renders every screen at phone and tablet sizes (Robolectric + Roborazzi) |
