@@ -1,0 +1,8 @@
+{
+  "files.exclude": { "**/.gradle": true, "**/build": true, "**/.kotlin": true },
+  "java.import.gradle.enabled": false,
+  "terminal.integrated.env.linux": {
+    "ANDROID_HOME": "${env:HOME}/Android/Sdk",
+    "PATH": "${env:HOME}/Android/Sdk/platform-tools:${env:PATH}"
+  }
+}

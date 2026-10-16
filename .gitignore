@@ -1,0 +1,19 @@
+# Build output
+.gradle/
+.kotlin/
+build/
+*.apk
+*.aab
+
+# Local machine settings and secrets — never commit
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# Downloaded Stockfish builds (fetched and checksum-verified by Gradle)
+.cache/
+
+# Private family photos for the loading screen — kept on this computer only
+app/images/
+*-family.apk
