@@ -55,6 +55,14 @@ Rather than rebuilding the app to change pictures, each player can add photos th
 They stay on the device and join the random start-up selection, which also gives public-release installs
 personal photos without anything being uploaded.
 
-### 14. Releases from git tags via GitHub Actions
+### 14. Settings belong to each player
+Grandparents may want large print, high contrast and spoken moves while children don't. Settings live in the
+profile, and the board reads them through a composition local, so switching player switches the whole look.
+
+### 15. Sounds synthesised, off by default
+Two tiny generated WAV files (a soft wooden tap and a double tap) avoid licensing questions and stay gentle.
+Sounds, vibration and speech are opt-in, in keeping with "calm, nothing that startles".
+
+### 16. Releases from git tags via GitHub Actions
 Pushing `vX.Y.Z` builds, tests, signs and publishes an APK, so releases are repeatable and the version always
 matches the tag. The signing key is stored as encrypted GitHub secrets, with a backup on the owner's computer.

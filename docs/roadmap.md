@@ -31,12 +31,12 @@ Stockfish 19 opponent tuned per level, Hint button in games, natural "thinking" 
 - Documentation, GPL-3.0 licence, public GitHub repository
 - CI on every push; signed releases from version tags
 
-## Next: Phase 5, accessibility and settings
-- Settings screen: board colour themes (including a high-contrast theme), "Large print" letters on pieces,
-  show/hide legal moves, confirm each move, always promote to a queen
-- Optional move sounds and vibration
-- TalkBack descriptions for squares and pieces; optionally speak moves aloud ("Knight to f3")
-- Respect the system font size everywhere (test at 130% and 200%)
+### Phase 5: Accessibility and settings
+- Per-player Settings screen with live preview: board themes (Green, Wood, Blue, High contrast), large-print
+  letters, show/hide possible moves, ask before each move, always choose a queen
+- Optional move sounds, vibration, and reading moves aloud ("Computer: knight to f3, check")
+- TalkBack: every square is described and can be tapped
+- Every screen checked at 130% and 200% system font size
 
 ## Ideas for later
 - Two players on one device

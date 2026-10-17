@@ -18,7 +18,9 @@ Play against the computer at five difficulty levels, solve puzzles, and learn us
 - **Five difficulty levels**, from *Beginner* to *Expert*, powered by [Stockfish](https://stockfishchess.org) and scaled to the player.
 - **Puzzles**: 600 hand-picked puzzles (120 per level) from the [Lichess puzzle database](https://database.lichess.org/#puzzles), with hints and solutions.
 - **Learn moves**: interactive lessons on castling, promotion, en passant, forks, pins, skewers and back-rank mate.
-- **Forgiving**: unlimited undo, a hint button, no clock, and games are saved automatically.
+- **Forgiving**: unlimited undo, a hint button, no clock, optional "ask before each move", and games are saved automatically.
+- **Settings for each player**: board colours (including high contrast), large-print letters on pieces, move sounds, vibration, and moves read aloud.
+- **Accessible**: works with large system text (up to 200%) and with TalkBack.
 - **Works on phones and tablets**, in portrait and landscape.
 
 ## Install
