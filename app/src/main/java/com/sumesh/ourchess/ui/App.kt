@@ -1,8 +1,17 @@
 package com.sumesh.ourchess.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sumesh.ourchess.data.PlayerSettings
 import com.sumesh.ourchess.engine.Engines
 import com.sumesh.ourchess.tutorials.Lessons
 import com.sumesh.ourchess.ui.game.GameScreen
@@ -10,17 +19,12 @@ import com.sumesh.ourchess.ui.game.GameViewModel
 import com.sumesh.ourchess.ui.level.LevelScreen
 import com.sumesh.ourchess.ui.loading.LoadingOverlay
 import com.sumesh.ourchess.ui.loading.PhotoBackdrop
-import com.sumesh.ourchess.ui.photos.PhotosScreen
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.Modifier
 import com.sumesh.ourchess.ui.menu.MenuScreen
+import com.sumesh.ourchess.ui.photos.PhotosScreen
 import com.sumesh.ourchess.ui.puzzles.PuzzleScreen
 import com.sumesh.ourchess.ui.puzzles.PuzzleViewModel
+import com.sumesh.ourchess.ui.settings.SettingsScreen
+import com.sumesh.ourchess.ui.theme.LocalPlayerSettings
 import com.sumesh.ourchess.ui.tutorials.LessonListScreen
 import com.sumesh.ourchess.ui.tutorials.LessonScreen
 import com.sumesh.ourchess.ui.tutorials.LessonViewModel
@@ -29,8 +33,18 @@ import com.sumesh.ourchess.ui.welcome.WelcomeScreen
 @Composable
 fun App(app: AppViewModel = viewModel()) {
     BackHandler(enabled = app.canGoBack) { app.back() }
+    // Every screen follows the current player's settings (board colours, large print, …).
+    CompositionLocalProvider(LocalPlayerSettings provides (app.current?.settings ?: PlayerSettings())) {
+        CurrentScreen(app)
+    }
+}
 
+@Composable
+private fun CurrentScreen(app: AppViewModel) {
     val profile = app.current
+    // Read fresh each time, so a change in Settings applies to games already in progress.
+    val settings = { app.current?.settings ?: PlayerSettings() }
+
     when (val screen = app.screen) {
         // The start-up photos stay behind the welcome screen, fading from bright to a soft background.
         Screen.Loading, Screen.Welcome -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
@@ -63,6 +77,7 @@ fun App(app: AppViewModel = viewModel()) {
             onLessons = { app.open(Screen.Lessons) },
             photoCount = app.photosVersion.let { app.photosOf(profile).size },
             onPhotos = { app.open(Screen.Photos) },
+            onSettings = { app.open(Screen.Settings) },
             onChangeLevel = { app.open(Screen.Level) },
             onSwitchPlayer = app::switchPlayer,
         )
@@ -75,6 +90,7 @@ fun App(app: AppViewModel = viewModel()) {
                     hintEngine = Engines.forHints(),
                     saved = app.savedGame(p),
                     onSave = { game -> app.saveGame(p, p.level, game) },
+                    settings = settings,
                 )
             }
             GameScreen(vm = vm, level = p.level, onBack = app::back)
@@ -87,6 +103,7 @@ fun App(app: AppViewModel = viewModel()) {
                     startIndex = p.nextPuzzle[p.level] ?: 0,
                     onSolved = app::puzzleSolved,
                     onAdvance = { index -> app.setNextPuzzle(p.level, index) },
+                    autoQueen = { settings().autoQueen },
                 )
             }
             PuzzleScreen(vm = vm, level = p.level, solvedCount = p.puzzlesSolved, onBack = app::back)
@@ -99,6 +116,12 @@ fun App(app: AppViewModel = viewModel()) {
             onRemove = app::removePhoto,
             onBack = app::back,
         )
+        Screen.Settings -> SettingsScreen(
+            name = profile?.name.orEmpty(),
+            settings = settings(),
+            onChange = app::updateSettings,
+            onBack = app::back,
+        )
         Screen.Lessons -> LessonListScreen(
             done = profile?.lessonsDone.orEmpty(),
             onOpen = { app.open(Screen.Lesson(it.id)) },
@@ -106,7 +129,7 @@ fun App(app: AppViewModel = viewModel()) {
         )
         is Screen.Lesson -> {
             val lesson = Lessons.byId(screen.id)
-            val vm = viewModel(key = "lesson-${lesson.id}") { LessonViewModel(lesson) }
+            val vm = viewModel(key = "lesson-${lesson.id}") { LessonViewModel(lesson) { settings().autoQueen } }
             LessonScreen(
                 vm = vm,
                 onComplete = { app.lessonDone(lesson.id) },

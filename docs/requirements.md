@@ -51,7 +51,21 @@ After choosing the level, the player chooses one of:
 2. **Puzzles**: chess puzzles to solve.
 3. **Learn moves**: tutorials that teach useful moves.
 
-The menu also offers *My photos*, *Change level* and *Switch player*.
+The menu also offers *My photos*, *Settings*, *Change level* and *Switch player*.
+
+### Settings (per player)
+Each player has their own settings, so one person's choices never affect another's:
+- **Board colours**: Green (default), Wood, Blue, **High contrast** (yellow/blue).
+- **Large print**: a letter badge on each piece (K, Q, R, B, N; pawns are left plain).
+- **Show possible moves**: dots/rings for legal moves (on by default). Hints always show.
+- **Ask before each move**: in games, every move needs "Yes, play it" or "No".
+- **Always choose a queen**: skip the promotion dialog.
+- **Move sounds**: a soft tap (moves) or double tap (captures).
+- **Vibrate**: a short buzz on each move, firmer for the opponent's move.
+- **Read moves aloud**: e.g. "Computer: knight to f3, check", using the device's text-to-speech.
+
+Sound, vibration and speech are off by default. Switching one on gives an immediate sample.
+A preview board on the Settings screen shows the look straight away.
 
 ### Playing against the computer
 - Only human-vs-computer play (no two-player or online modes for now).
@@ -81,6 +95,8 @@ The menu also offers *My photos*, *Change level* and *Switch player*.
 ## Non-functional requirements
 
 - **Devices**: Android 8.0+ (API 26), 64-bit ARM phones and tablets; portrait and landscape.
+- **Accessibility**: every screen must work at system font sizes up to 200% (buttons stack, boards stay large and
+  the page scrolls instead of shrinking the board). TalkBack reads each square ("e4, white pawn") and can make moves.
 - **Offline**: everything works without internet.
 - **Development**: VS Code-native workflow; no Android Studio required.
 - **Source**: public GitHub repository, GPL-3.0 (required because Stockfish is bundled).
@@ -90,5 +106,5 @@ The menu also offers *My photos*, *Change level* and *Switch player*.
 
 ## Out of scope (for now)
 
-Two-player on one device, online play, accounts, chess clocks, game analysis, sound effects, Play Store publishing.
+Two-player on one device, online play, accounts, chess clocks, game analysis, Play Store publishing.
 See [roadmap.md](roadmap.md) for ideas.

@@ -1,5 +1,6 @@
 package com.sumesh.ourchess.ui.game
 
+import com.sumesh.ourchess.data.PlayerSettings
 import com.sumesh.ourchess.data.SavedGame
 import com.sumesh.ourchess.engine.ChessEngine
 import com.sumesh.ourchess.game.GameStatus
@@ -85,6 +86,39 @@ class GameViewModelTest {
         val vm = GameViewModel(saved = SavedGame(Side.WHITE, listOf("f2f3", "e7e5", "g2g4", "d8h4")))
         assertEquals(GameStatus.CHECKMATE, vm.state.status)
         assertFalse(vm.state.showGameOver)
+    }
+
+    @Test
+    fun askBeforeEachMove() = runTest(dispatcher) {
+        val vm = GameViewModel(engine = ScriptedEngine("e7e5"), settings = { PlayerSettings(confirmMoves = true) })
+        vm.move("g1", "f3")
+        assertEquals(Move.parseUci("g1f3"), vm.state.pendingConfirm)
+        assertEquals("Knight to f3", vm.state.pendingConfirmText)
+        assertEquals(32, vm.state.pieces.size)
+        assertEquals(null, vm.state.lastMove) // nothing played yet
+
+        vm.cancelMove()
+        assertEquals(null, vm.state.pendingConfirm)
+        assertEquals(null, vm.state.lastMove)
+
+        vm.move("e2", "e4")
+        vm.confirmMove()
+        advanceUntilIdle()
+        assertEquals(Move.parseUci("e7e5"), vm.state.lastMove)
+        assertEquals("Pawn to e5", vm.state.lastMoveEvent?.description)
+        assertTrue(vm.state.lastMoveEvent!!.byOpponent)
+    }
+
+    @Test
+    fun autoQueenSkipsThePromotionDialog() {
+        // Resume a game where White's h-pawn can capture on g8 and promote.
+        val promo = GameViewModel(
+            saved = SavedGame(Side.WHITE, listOf("h2h4", "g7g5", "h4g5", "h7h6", "g5h6", "g8f6", "h6h7", "f6g8")),
+            settings = { PlayerSettings(autoQueen = true) },
+        )
+        promo.move("h7", "g8")
+        assertEquals(null, promo.state.pendingPromotion)
+        assertEquals(Move.parseUci("h7g8q"), promo.state.lastMove)
     }
 
     @Test

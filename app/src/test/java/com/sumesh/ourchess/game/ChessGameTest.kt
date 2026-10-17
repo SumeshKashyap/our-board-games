@@ -121,3 +121,19 @@ class ChessGameTest {
         assertEquals(Square(4, 3), Square.parse("e4"))
     }
 }
+
+class MoveDescriptionTest {
+    private fun describe(fen: String, uci: String) = describeMove(ChessGame(fen), Move.parseUci(uci))
+
+    @Test
+    fun describesMovesInPlainWords() {
+        assertEquals("Knight to f3", describe(ChessGame.START_FEN, "g1f3"))
+        assertEquals("Pawn takes pawn on d5", describe("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2", "e4d5"))
+        assertEquals("Castle king side", describe("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", "e1g1"))
+        assertEquals("Castle queen side", describe("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", "e1c1"))
+        assertEquals("Rook to a8, checkmate", describe("6k1/5ppp/8/8/8/8/5PPP/R5K1 w - - 0 1", "a1a8"))
+        assertEquals("Pawn to e8, becomes a queen, check", describe("k7/4P3/8/8/8/8/8/K7 w - - 0 1", "e7e8q"))
+        assertEquals("Pawn takes pawn on d6", describe("4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 2", "e5d6"))
+        assertEquals("white knight", Piece(Side.WHITE, PieceType.KNIGHT).spoken())
+    }
+}

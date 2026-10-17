@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.sumesh.ourchess.data.PhotoRepository
+import com.sumesh.ourchess.data.PlayerSettings
 import com.sumesh.ourchess.data.Profile
 import com.sumesh.ourchess.data.ProfileRepository
 import com.sumesh.ourchess.data.SavedGame
@@ -35,6 +36,7 @@ sealed interface Screen {
     data object Puzzles : Screen
     data object Lessons : Screen
     data object Photos : Screen
+    data object Settings : Screen
     data class Lesson(val id: String) : Screen
 }
 
@@ -150,6 +152,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun lessonDone(id: String) {
         val profile = current ?: return
         current = save(profile.copy(lessonsDone = profile.lessonsDone + id))
+    }
+
+    fun updateSettings(settings: PlayerSettings) {
+        val profile = current ?: return
+        current = save(profile.copy(settings = settings))
     }
 
     fun photosOf(profile: Profile): List<File> = photos.forProfile(profile.id)

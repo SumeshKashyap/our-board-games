@@ -40,7 +40,20 @@ import androidx.compose.ui.zIndex
 import com.sumesh.ourchess.game.Move
 import com.sumesh.ourchess.game.Piece
 import com.sumesh.ourchess.game.Square
-import com.sumesh.ourchess.ui.theme.BoardColors
+import com.sumesh.ourchess.game.PieceType
+import com.sumesh.ourchess.game.Side
+import com.sumesh.ourchess.game.spoken
+import com.sumesh.ourchess.ui.theme.BoardPalette
+import com.sumesh.ourchess.ui.theme.LocalPlayerSettings
+import com.sumesh.ourchess.ui.theme.palette
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import kotlin.math.roundToInt
 
 /** A move to slide across the board; [id] changes for every new move so repeats still animate. */
@@ -50,7 +63,10 @@ data class MoveAnimation(val id: Int, val from: Square, val to: Square, val dura
  * The chess board. Fills the largest square that fits.
  * Pieces can be moved by tapping (piece, then destination) or by dragging.
  *
+ * Colours, large-print letters and whether possible moves are shown follow the current player's settings.
+ *
  * @param flipped true to show the board from Black's side.
+ * @param targetsAreHint true when [targets] is a suggested move (always shown, even if possible moves are hidden).
  * @param onDragStart called when a drag begins on a square; return true to allow dragging that piece.
  */
 @Composable
@@ -62,6 +78,7 @@ fun ChessBoard(
     lastMove: Move?,
     checkSquare: Square?,
     animation: MoveAnimation?,
+    targetsAreHint: Boolean = false,
     onSquareTap: (Square) -> Unit,
     onDragStart: (Square) -> Boolean,
     onDrop: (from: Square, to: Square) -> Unit,
@@ -70,6 +87,9 @@ fun ChessBoard(
     val tap by rememberUpdatedState(onSquareTap)
     val dragStart by rememberUpdatedState(onDragStart)
     val drop by rememberUpdatedState(onDrop)
+    val settings = LocalPlayerSettings.current
+    val palette = settings.boardTheme.palette()
+    val visibleTargets = if (settings.showLegalMoves || targetsAreHint) targets else emptySet()
 
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val boardSize = minOf(maxWidth, maxHeight)
@@ -150,15 +170,15 @@ fun ChessBoard(
                 val sqSize = Size(squarePx, squarePx)
                 for (sq in Square.all) {
                     val tl = topLeft(sq)
-                    drawRect(if (sq.isLight) BoardColors.LightSquare else BoardColors.DarkSquare, tl, sqSize)
+                    drawRect(if (sq.isLight) palette.lightSquare else palette.darkSquare, tl, sqSize)
                     if (lastMove != null && (sq == lastMove.from || sq == lastMove.to)) {
-                        drawRect(BoardColors.LastMove.copy(alpha = if (sq.isLight) 0.6f else 0.75f), tl, sqSize)
+                        drawRect(palette.lastMove.copy(alpha = if (sq.isLight) 0.6f else 0.75f), tl, sqSize)
                     }
                     if (sq == selected) {
-                        drawRect(BoardColors.Selected.copy(alpha = 0.45f), tl, sqSize)
-                        val inset = squarePx * 0.04f
+                        drawRect(palette.selected.copy(alpha = 0.45f), tl, sqSize)
+                        val inset = squarePx * 0.05f
                         drawRect(
-                            BoardColors.Selected,
+                            palette.selected,
                             tl + Offset(inset / 2, inset / 2),
                             Size(squarePx - inset, squarePx - inset),
                             style = Stroke(inset),
@@ -167,7 +187,7 @@ fun ChessBoard(
                     if (sq == checkSquare) {
                         drawRect(
                             Brush.radialGradient(
-                                listOf(BoardColors.Check, BoardColors.Check.copy(alpha = 0f)),
+                                listOf(palette.check, palette.check.copy(alpha = 0f)),
                                 center = tl + Offset(squarePx / 2, squarePx / 2),
                                 radius = squarePx * 0.7f,
                             ),
@@ -175,15 +195,15 @@ fun ChessBoard(
                         )
                     }
                 }
-                drawCoordinates(flipped, squarePx, textMeasurer, coordStyle)
-                for (sq in targets) {
+                drawCoordinates(flipped, squarePx, textMeasurer, coordStyle, palette)
+                for (sq in visibleTargets) {
                     val center = topLeft(sq) + Offset(squarePx / 2, squarePx / 2)
                     if (pieces.containsKey(sq)) {
                         // Capture: a thick ring around the piece.
                         val w = squarePx * 0.09f
-                        drawCircle(BoardColors.Target, radius = squarePx / 2 - w / 2, center = center, style = Stroke(w))
+                        drawCircle(palette.target, radius = squarePx / 2 - w / 2, center = center, style = Stroke(w))
                     } else {
-                        drawCircle(BoardColors.Target, radius = squarePx * 0.17f, center = center)
+                        drawCircle(palette.target, radius = squarePx * 0.17f, center = center)
                     }
                 }
             }
@@ -195,13 +215,35 @@ fun ChessBoard(
                     val from = topLeft(animation.from)
                     pos = from + (pos - from) * animProgress
                 }
-                Image(
-                    painter = painterResource(pieceDrawable(piece)),
-                    contentDescription = null,
-                    modifier = Modifier
+                PieceView(
+                    piece,
+                    settings.largePrint,
+                    Modifier
                         .offset { IntOffset(pos.x.roundToInt(), pos.y.roundToInt()) }
                         .size(squareSize)
                         .zIndex(if (sq == animation?.to) 1f else 0f),
+                )
+            }
+
+            // Invisible per-square nodes so TalkBack can read and operate the board.
+            for (sq in Square.all) {
+                val tl = topLeft(sq)
+                val piece = pieces[sq]
+                val description = buildString {
+                    append(sq.name)
+                    append(", ")
+                    append(piece?.spoken() ?: "empty")
+                    if (sq == selected) append(", selected")
+                    if (sq in visibleTargets) append(", you can move here")
+                }
+                Box(
+                    Modifier
+                        .offset { IntOffset(tl.x.roundToInt(), tl.y.roundToInt()) }
+                        .size(squareSize)
+                        .clearAndSetSemantics {
+                            contentDescription = description
+                            onClick { tap(sq); true }
+                        },
                 )
             }
 
@@ -210,10 +252,10 @@ fun ChessBoard(
                 val piece = pieces[from] ?: return@let
                 val scale = 1.3f
                 val half = squarePx * scale / 2
-                Image(
-                    painter = painterResource(pieceDrawable(piece)),
-                    contentDescription = null,
-                    modifier = Modifier
+                PieceView(
+                    piece,
+                    settings.largePrint,
+                    Modifier
                         .offset {
                             IntOffset((dragPos.x - half).roundToInt(), (dragPos.y - half * 1.6f).roundToInt())
                         }
@@ -231,7 +273,10 @@ private fun DrawScope.drawCoordinates(
     squarePx: Float,
     textMeasurer: androidx.compose.ui.text.TextMeasurer,
     style: TextStyle,
+    palette: BoardPalette,
 ) {
+    // Coordinates use the opposite square colour so they stay readable.
+    fun coordColor(sq: Square): Color = if (sq.isLight) palette.textOnLight else palette.textOnDark
     val pad = squarePx * 0.05f
     for (i in 0..7) {
         // Bottom row: files
@@ -253,4 +298,44 @@ private fun DrawScope.drawCoordinates(
     }
 }
 
-private fun coordColor(sq: Square): Color = if (sq.isLight) BoardColors.DarkSquareText else BoardColors.LightSquareText
+/**
+ * One piece. In large print, a letter badge (K, Q, R, B, N) in the corner names it.
+ * Pawns get no letter: their shape is already distinct and it keeps the board uncluttered.
+ */
+@Composable
+fun PieceView(piece: Piece, largePrint: Boolean, modifier: Modifier) {
+    BoxWithConstraints(modifier) {
+        Image(painterResource(pieceDrawable(piece)), contentDescription = null, modifier = Modifier.fillMaxSize())
+        val letter = piece.type.letter
+        if (largePrint && letter != null) {
+            val badge = maxWidth * 0.42f
+            val white = piece.side == Side.WHITE
+            Box(
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(badge)
+                    .background(if (white) Color.White else Color(0xFF1A1A1A), CircleShape)
+                    .border(maxWidth * 0.03f, if (white) Color(0xFF1A1A1A) else Color.White, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    letter,
+                    color = if (white) Color(0xFF1A1A1A) else Color.White,
+                    // Sized to the square, not the system font size, so it always fits.
+                    fontSize = with(LocalDensity.current) { (badge * 0.62f).toSp() },
+                    fontWeight = FontWeight.Black,
+                )
+            }
+        }
+    }
+}
+
+private val PieceType.letter: String?
+    get() = when (this) {
+        PieceType.KING -> "K"
+        PieceType.QUEEN -> "Q"
+        PieceType.ROOK -> "R"
+        PieceType.BISHOP -> "B"
+        PieceType.KNIGHT -> "N"
+        PieceType.PAWN -> null
+    }

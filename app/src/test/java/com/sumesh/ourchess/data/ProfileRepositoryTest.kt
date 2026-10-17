@@ -22,7 +22,8 @@ class ProfileRepositoryTest {
 
         val asha = repo.create("  Asha ")
         val ravi = repo.create("Ravi")
-        repo.update(asha.copy(level = 4, nextPuzzle = mapOf(4 to 7), puzzlesSolved = 3, lessonsDone = setOf("fork")))
+        val settings = PlayerSettings(boardTheme = BoardTheme.HIGH_CONTRAST, largePrint = true, speakMoves = true)
+        repo.update(asha.copy(level = 4, nextPuzzle = mapOf(4 to 7), puzzlesSolved = 3, lessonsDone = setOf("fork"), settings = settings))
 
         val reloaded = ProfileRepository(file).load()
         assertEquals(listOf("Asha", "Ravi"), reloaded.map { it.name })
@@ -31,6 +32,8 @@ class ProfileRepositoryTest {
         assertEquals(mapOf(4 to 7), a.nextPuzzle)
         assertEquals(3, a.puzzlesSolved)
         assertEquals(setOf("fork"), a.lessonsDone)
+        assertEquals(settings, a.settings)
+        assertEquals(PlayerSettings(), reloaded.first { it.id == ravi.id }.settings)
 
         repo.delete(ravi.id)
         assertEquals(listOf(asha.id), ProfileRepository(file).load().map { it.id })

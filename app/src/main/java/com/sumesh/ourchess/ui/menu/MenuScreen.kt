@@ -1,11 +1,16 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package com.sumesh.ourchess.ui.menu
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -32,20 +37,22 @@ fun MenuScreen(
     onLessons: () -> Unit,
     photoCount: Int,
     onPhotos: () -> Unit,
+    onSettings: () -> Unit,
     onChangeLevel: () -> Unit,
     onSwitchPlayer: () -> Unit,
 ) {
     MenuPage {
         Text("Hello, ${profile.name}", style = MaterialTheme.typography.headlineMedium)
-        Row(
+        // Wraps the button onto its own line when the text is large.
+        FlowRow(
             Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 "Level ${profile.level} · ${Levels.name(profile.level)}",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.align(Alignment.CenterVertically),
             )
             OutlinedButton(onClick = onChangeLevel) { Text("Change level") }
         }
@@ -75,6 +82,14 @@ fun MenuScreen(
             onClick = onPhotos,
             leading = {
                 Icon(Icons.Filled.Face, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(56.dp))
+            },
+        )
+        ChoiceCard(
+            title = "Settings",
+            subtitle = "Board colours, large print, sounds and more",
+            onClick = onSettings,
+            leading = {
+                Icon(Icons.Filled.Settings, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(56.dp))
             },
         )
         OutlinedButton(onClick = onSwitchPlayer, modifier = Modifier.fillMaxWidth()) {

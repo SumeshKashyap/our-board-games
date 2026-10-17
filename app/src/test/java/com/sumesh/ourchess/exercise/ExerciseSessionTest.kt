@@ -26,7 +26,7 @@ class ExerciseSessionTest {
     @Test
     fun solvingWithRepliesFinishesUnaided() = runTest {
         var result: Boolean? = null
-        val s = ExerciseSession(this, forkFen, null, forkSolution) { result = it }
+        val s = ExerciseSession(this, forkFen, null, forkSolution, onFinished = { result = it })
         s.move("d5", "c7")
         assertEquals(ExercisePhase.OPPONENT_REPLY, s.state.phase)
         advanceUntilIdle()
@@ -49,7 +49,7 @@ class ExerciseSessionTest {
     @Test
     fun hintShowsTheMoveAndCountsAsHelp() = runTest {
         var result: Boolean? = null
-        val s = ExerciseSession(this, forkFen, null, forkSolution) { result = it }
+        val s = ExerciseSession(this, forkFen, null, forkSolution, onFinished = { result = it })
         s.hint()
         assertEquals(Square.parse("d5"), s.state.selected)
         assertEquals(setOf(Square.parse("c7")), s.state.targets)
@@ -65,7 +65,8 @@ class ExerciseSessionTest {
         // Lichess-style: opponent plays f3d4, then the player mates with d5g2.
         val s = ExerciseSession(
             this, "r2r2k1/pb3ppp/1p2p3/3q4/1P1b1P2/P4N2/4B1PP/2RQ1RK1 w - - 0 17", "f3d4", listOf("d5g2"),
-        ) { result = it }
+            onFinished = { result = it },
+        )
         assertEquals(ExercisePhase.OPPONENT_SETUP, s.state.phase)
         advanceUntilIdle()
         assertEquals(ExercisePhase.YOUR_TURN, s.state.phase)

@@ -10,7 +10,7 @@ import com.sumesh.ourchess.tutorials.Lesson
 import com.sumesh.ourchess.tutorials.LessonStep
 import com.sumesh.ourchess.ui.exercise.ExerciseSession
 
-class LessonViewModel(val lesson: Lesson) : ViewModel() {
+class LessonViewModel(val lesson: Lesson, private val autoQueen: () -> Boolean = { false }) : ViewModel() {
 
     var stepIndex by mutableIntStateOf(0)
         private set
@@ -32,5 +32,6 @@ class LessonViewModel(val lesson: Lesson) : ViewModel() {
         session = newSession()
     }
 
-    private fun newSession() = ExerciseSession(viewModelScope, step.fen, setupMove = null, solution = step.solution)
+    private fun newSession() =
+        ExerciseSession(viewModelScope, step.fen, setupMove = null, solution = step.solution, autoQueen = autoQueen)
 }

@@ -4,6 +4,8 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.sumesh.ourchess.data.BoardTheme
+import com.sumesh.ourchess.data.PlayerSettings
 import com.sumesh.ourchess.engine.ChessEngine
 import com.sumesh.ourchess.game.Side
 import com.sumesh.ourchess.game.Square
@@ -74,6 +76,38 @@ class ScreenshotTest {
     @Test fun lessonList() { app { withPlayers(); lessonDone("castling"); open(Screen.Lessons) }; capture("06_lessons") }
 
     @Test fun lesson() { app { withPlayers(); open(Screen.Lesson("fork")) }; capture("07_lesson_fork") }
+
+    @Test fun settings() { app { withPlayers(); open(Screen.Settings) }; capture("13_settings") }
+
+    @Test fun largePrintHighContrast() {
+        app {
+            withPlayers()
+            updateSettings(PlayerSettings(boardTheme = BoardTheme.HIGH_CONTRAST, largePrint = true))
+            open(Screen.Settings)
+        }
+        capture("14_settings_large_print_high_contrast")
+    }
+
+    @Test @Config(qualifiers = PHONE, fontScale = 2.0f)
+    fun menuHugeText() { app { withPlayers() }; capture("20_menu_font200") }
+
+    @Test @Config(qualifiers = PHONE, fontScale = 2.0f)
+    fun levelHugeText() { app { createProfile("Asha") }; capture("21_level_font200") }
+
+    @Test @Config(qualifiers = PHONE, fontScale = 2.0f)
+    fun settingsHugeText() { app { withPlayers(); open(Screen.Settings) }; capture("22_settings_font200") }
+
+    @Test @Config(qualifiers = PHONE, fontScale = 2.0f)
+    fun lessonHugeText() { app { withPlayers(); open(Screen.Lesson("fork")) }; capture("23_lesson_font200") }
+
+    @Test @Config(qualifiers = PHONE, fontScale = 2.0f)
+    fun gameHugeText() { midGame(); capture("24_game_font200") }
+
+    @Test @Config(qualifiers = PHONE, fontScale = 1.3f)
+    fun gameLargeText() { midGame(); capture("25_game_font130") }
+
+    @Test @Config(qualifiers = TABLET, fontScale = 2.0f)
+    fun puzzleTabletHugeText() { app { withPlayers(); open(Screen.Puzzles) }; capture("26_puzzle_tablet_font200") }
 
     @Test fun photos() { app { withPlayers(); open(Screen.Photos) }; capture("12_photos") }
 

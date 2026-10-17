@@ -5,7 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sumesh.ourchess.data.PlayerSettings
 import com.sumesh.ourchess.data.SavedGame
+import com.sumesh.ourchess.game.MoveEvent
+import com.sumesh.ourchess.game.describeMove
 import com.sumesh.ourchess.engine.ChessEngine
 import com.sumesh.ourchess.engine.RandomMoveEngine
 import com.sumesh.ourchess.game.ChessGame
@@ -42,6 +45,11 @@ data class GameUiState(
     val hintShown: Boolean,
     /** True once the game has ended and the player hasn't closed the result dialog yet. */
     val showGameOver: Boolean,
+    /** With "Ask before each move" on: the move waiting for Yes/No, and how it reads. */
+    val pendingConfirm: Move?,
+    val pendingConfirmText: String?,
+    /** The latest move, for sound, vibration and speech. */
+    val lastMoveEvent: MoveEvent?,
 ) {
     val isHumanTurn: Boolean get() = !status.isOver && sideToMove == humanSide && !computerThinking
 
@@ -64,6 +72,8 @@ class GameViewModel(
     saved: SavedGame? = null,
     /** Called whenever the moves change, so the game can be saved. */
     private val onSave: (SavedGame) -> Unit = {},
+    /** The current player's settings (read each time, so changes apply straight away). */
+    private val settings: () -> PlayerSettings = { PlayerSettings() },
 ) : ViewModel() {
 
     private var game = ChessGame()
@@ -78,6 +88,10 @@ class GameViewModel(
     private var hintLoading = false
     private var hintTarget: Square? = null
     private var gameOverDismissed = false
+    private var pendingConfirm: Move? = null
+    private var pendingConfirmText: String? = null
+    private var lastMoveEvent: MoveEvent? = null
+    private var nextEventId = 0
 
     var state by mutableStateOf(buildState())
         private set
@@ -94,6 +108,8 @@ class GameViewModel(
 
     fun onSquareTapped(square: Square) {
         if (!state.isHumanTurn) return
+        // Tapping the board while a move awaits confirmation means "no, not that one".
+        if (pendingConfirm != null) clearConfirm()
         val current = selected
         when {
             current != null && square in targetsFor(current) -> tryMove(current, square, animate = true)
@@ -119,7 +135,19 @@ class GameViewModel(
     fun onPromotionChosen(type: PieceType) {
         val (from, to) = pendingPromotion ?: return
         pendingPromotion = null
-        playHumanMove(Move(from, to, type), animate = true)
+        requestMove(Move(from, to, type), animate = true)
+    }
+
+    /** "Yes, play it" for a move waiting for confirmation. */
+    fun confirmMove() {
+        val move = pendingConfirm ?: return
+        clearConfirm()
+        playHumanMove(move, animate = true)
+    }
+
+    fun cancelMove() {
+        clearConfirm()
+        publish()
     }
 
     fun onPromotionCancelled() {
@@ -193,18 +221,41 @@ class GameViewModel(
         engineJob?.cancel()
         hintJob?.cancel()
         hintLoading = false
+        clearConfirm()
+    }
+
+    private fun clearConfirm() {
+        pendingConfirm = null
+        pendingConfirmText = null
+        select(null)
     }
 
     private fun tryMove(from: Square, to: Square, animate: Boolean) {
-        if (game.isPromotion(from, to)) {
-            pendingPromotion = from to to
+        when {
+            !game.isPromotion(from, to) -> requestMove(Move(from, to), animate)
+            settings().autoQueen -> requestMove(Move(from, to, PieceType.QUEEN), animate)
+            else -> pendingPromotion = from to to
+        }
+    }
+
+    /** Plays the move, or first asks "Play this move?" if the player wants to confirm moves. */
+    private fun requestMove(move: Move, animate: Boolean) {
+        if (settings().confirmMoves) {
+            pendingConfirm = move
+            pendingConfirmText = describeMove(game, move)
+            selected = move.from
+            hintTarget = move.to
+            publish()
         } else {
-            playHumanMove(Move(from, to), animate)
+            playHumanMove(move, animate)
         }
     }
 
     private fun playHumanMove(move: Move, animate: Boolean) {
+        val description = describeMove(game, move)
+        val capture = game.pieceAt(move.to) != null || description.contains(" takes ")
         if (!game.makeMove(move)) return
+        lastMoveEvent = MoveEvent(nextEventId++, description, byOpponent = false, capture = capture)
         hintJob?.cancel()
         hintLoading = false
         select(null)
@@ -225,7 +276,9 @@ class GameViewModel(
             delay((MIN_THINK_MS - (System.currentTimeMillis() - started)).coerceAtLeast(0))
             thinking = false
             val move = uci?.let(Move::parseUci)
+            val description = move?.let { describeMove(game, it) }
             if (move != null && game.makeMove(move)) {
+                lastMoveEvent = MoveEvent(nextEventId++, description!!, byOpponent = true, capture = description.contains(" takes "))
                 animation = MoveAnimation(nextAnimationId++, move.from, move.to, COMPUTER_MOVE_MS)
                 save()
             }
@@ -260,8 +313,11 @@ class GameViewModel(
             computerLost = game.lostPieces(humanSide.opposite),
             canUndo = game.moveCount >= humanMovesNeeded,
             hintLoading = hintLoading,
-            hintShown = hintTarget != null,
+            hintShown = hintTarget != null && pendingConfirm == null,
             showGameOver = status.isOver && !gameOverDismissed,
+            pendingConfirm = pendingConfirm,
+            pendingConfirmText = pendingConfirmText,
+            lastMoveEvent = lastMoveEvent,
         )
     }
 

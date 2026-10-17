@@ -15,6 +15,7 @@ class PuzzleViewModel(
     private val onSolved: () -> Unit,
     /** Remembers where to continue next time. */
     private val onAdvance: (nextIndex: Int) -> Unit,
+    private val autoQueen: () -> Boolean = { false },
 ) : ViewModel() {
 
     var index by mutableIntStateOf(startIndex.coerceIn(0, puzzles.lastIndex))
@@ -39,10 +40,14 @@ class PuzzleViewModel(
 
     private fun newSession(): ExerciseSession {
         val p = puzzle
-        return ExerciseSession(viewModelScope, p.fen, p.moves.first(), p.moves.drop(1)) { unaided ->
-            if (unaided) onSolved()
-            // Either way, next time start with a fresh puzzle.
-            onAdvance((puzzles.indexOf(p) + 1) % puzzles.size)
-        }
+        return ExerciseSession(
+            viewModelScope, p.fen, p.moves.first(), p.moves.drop(1),
+            onFinished = { unaided ->
+                if (unaided) onSolved()
+                // Either way, next time start with a fresh puzzle.
+                onAdvance((puzzles.indexOf(p) + 1) % puzzles.size)
+            },
+            autoQueen = autoQueen,
+        )
     }
 }

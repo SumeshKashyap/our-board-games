@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import com.sumesh.ourchess.game.ChessGame
 import com.sumesh.ourchess.game.GameStatus
 import com.sumesh.ourchess.game.Move
+import com.sumesh.ourchess.game.MoveEvent
+import com.sumesh.ourchess.game.describeMove
 import com.sumesh.ourchess.game.Piece
 import com.sumesh.ourchess.game.PieceType
 import com.sumesh.ourchess.game.Side
@@ -28,6 +30,9 @@ data class ExerciseUiState(
     val checkSquare: Square?,
     val animation: MoveAnimation?,
     val pendingPromotion: Pair<Square, Square>?,
+    /** True while [targets] shows a hint (shown even when possible moves are hidden). */
+    val hintShown: Boolean,
+    val lastMoveEvent: MoveEvent?,
 ) {
     val isFinished: Boolean get() = phase == ExercisePhase.SOLVED || phase == ExercisePhase.SOLUTION_SHOWN
 }
@@ -45,6 +50,8 @@ class ExerciseSession(
     private val setupMove: String?,
     private val solution: List<String>,
     private val onFinished: (solvedUnaided: Boolean) -> Unit = {},
+    /** Whether to skip the promotion dialog and always choose a queen. */
+    private val autoQueen: () -> Boolean = { false },
 ) {
     private val game = ChessGame(fen)
     private val userSide = if (setupMove != null) game.sideToMove.opposite else game.sideToMove
@@ -57,6 +64,8 @@ class ExerciseSession(
     private var nextAnimationId = 0
     private var helpUsed = false
     private var job: Job? = null
+    private var lastMoveEvent: MoveEvent? = null
+    private var nextEventId = 0
 
     var state by mutableStateOf(buildState())
         private set
@@ -153,11 +162,17 @@ class ExerciseSession(
     }
 
     private fun tryMove(from: Square, to: Square, animate: Boolean) {
-        if (game.isPromotion(from, to)) pendingPromotion = from to to else playUserMove(Move(from, to), animate)
+        when {
+            !game.isPromotion(from, to) -> playUserMove(Move(from, to), animate)
+            autoQueen() -> playUserMove(Move(from, to, PieceType.QUEEN), animate)
+            else -> pendingPromotion = from to to
+        }
     }
 
     private fun playUserMove(move: Move, animate: Boolean) {
+        val description = describeMove(game, move)
         if (!game.makeMove(move)) return
+        lastMoveEvent = MoveEvent(nextEventId++, description, byOpponent = false, capture = description.contains(" takes "))
         select(null)
         animation = if (animate) MoveAnimation(nextAnimationId++, move.from, move.to, USER_MOVE_MS) else null
 
@@ -200,8 +215,13 @@ class ExerciseSession(
         onFinished(!helpUsed)
     }
 
+    /** Plays an opponent (or demonstration) move with a slide. */
     private fun playAnimated(move: Move, durationMs: Int) {
-        if (game.makeMove(move)) animation = MoveAnimation(nextAnimationId++, move.from, move.to, durationMs)
+        val description = describeMove(game, move)
+        if (game.makeMove(move)) {
+            animation = MoveAnimation(nextAnimationId++, move.from, move.to, durationMs)
+            lastMoveEvent = MoveEvent(nextEventId++, description, byOpponent = true, capture = description.contains(" takes "))
+        }
     }
 
     private fun targetsFor(square: Square): Set<Square> = game.legalMovesFrom(square).map { it.to }.toSet()
@@ -222,6 +242,8 @@ class ExerciseSession(
             checkSquare = if (inCheck) game.kingSquare(game.sideToMove) else null,
             animation = animation,
             pendingPromotion = pendingPromotion,
+            hintShown = hintTarget != null,
+            lastMoveEvent = lastMoveEvent,
         )
     }
 

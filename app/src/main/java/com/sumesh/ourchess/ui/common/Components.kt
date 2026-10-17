@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -44,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -136,10 +138,13 @@ fun BigButton(
     }
 }
 
-/** Action buttons: side by side in portrait, stacked in the narrow landscape side panel. */
+/**
+ * Action buttons: side by side in portrait, stacked in the narrow landscape side panel —
+ * and always stacked when the system text size is large, so labels never get squeezed.
+ */
 @Composable
 fun ButtonGroup(stacked: Boolean, content: @Composable (Modifier) -> Unit) {
-    if (stacked) {
+    if (stacked || LocalDensity.current.fontScale >= 1.3f) {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             content(Modifier.fillMaxWidth())
         }
@@ -221,6 +226,15 @@ fun BoardScreenLayout(
                         Spacer(Modifier.heightIn(min = 8.dp))
                         actions(true)
                     }
+                }
+            } else if (LocalDensity.current.fontScale >= 1.3f) {
+                // Large text: keep the board full width and let the page scroll, rather than shrinking the board.
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    header()
+                    info()
+                    board(Modifier.fillMaxWidth().aspectRatio(1f))
+                    belowBoard()
+                    actions(false)
                 }
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

@@ -44,6 +44,7 @@ import com.sumesh.ourchess.ui.common.PromotionDialog
 import com.sumesh.ourchess.ui.common.ScreenHeader
 import com.sumesh.ourchess.ui.common.StatusBanner
 import com.sumesh.ourchess.ui.common.StatusColors
+import com.sumesh.ourchess.ui.feedback.MoveFeedback
 import kotlinx.coroutines.delay
 
 @Composable
@@ -54,8 +55,12 @@ fun GameScreen(vm: GameViewModel, level: Int, onBack: () -> Unit) {
     BoardScreenLayout(
         header = { ScreenHeader("Level $level · ${Levels.name(level)}", onBack = onBack, backLabel = "Menu") },
         info = {
-            val (text, color) = statusText(state)
-            StatusBanner(text, color)
+            if (state.pendingConfirm != null) {
+                StatusBanner("Play: ${state.pendingConfirmText}?", StatusColors.Neutral)
+            } else {
+                val (text, color) = statusText(state)
+                StatusBanner(text, color)
+            }
         },
         board = { modifier ->
             ChessBoard(
@@ -66,6 +71,7 @@ fun GameScreen(vm: GameViewModel, level: Int, onBack: () -> Unit) {
                 lastMove = state.lastMove,
                 checkSquare = state.checkSquare,
                 animation = state.animation,
+                targetsAreHint = state.hintShown || state.pendingConfirm != null,
                 onSquareTap = vm::onSquareTapped,
                 onDragStart = vm::onDragStart,
                 onDrop = vm::onDrop,
@@ -74,6 +80,15 @@ fun GameScreen(vm: GameViewModel, level: Int, onBack: () -> Unit) {
         },
         belowBoard = { CapturedPieces(state) },
         actions = { stacked ->
+            if (state.pendingConfirm != null) {
+                ButtonGroup(stacked) { m ->
+                    Button(onClick = vm::confirmMove, modifier = m.heightIn(min = 64.dp)) {
+                        Text("Yes, play it", style = MaterialTheme.typography.labelLarge)
+                    }
+                    BigButton("No", vm::cancelMove, m)
+                }
+                return@BoardScreenLayout
+            }
             ButtonGroup(stacked) { m ->
                 BigButton("Undo", vm::undo, m, enabled = state.canUndo)
                 BigButton(if (state.hintLoading) "Thinking…" else "Hint", vm::hint, m, enabled = state.isHumanTurn && !state.hintLoading)
@@ -82,6 +97,7 @@ fun GameScreen(vm: GameViewModel, level: Int, onBack: () -> Unit) {
         },
     )
 
+    MoveFeedback(state.lastMoveEvent, opponentName = "Computer")
     state.pendingPromotion?.let {
         PromotionDialog(side = state.humanSide, onChoose = vm::onPromotionChosen, onDismiss = vm::onPromotionCancelled)
     }

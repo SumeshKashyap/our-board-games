@@ -10,6 +10,7 @@ data class Profile(
     val nextPuzzle: Map<Int, Int> = emptyMap(),
     val puzzlesSolved: Int = 0,
     val lessonsDone: Set<String> = emptySet(),
+    val settings: PlayerSettings = PlayerSettings(),
 )
 
 object Levels {
