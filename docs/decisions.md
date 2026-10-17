@@ -1,6 +1,6 @@
 # Decisions
 
-Key choices made while building Our Chess, and why. Newest last.
+Key choices made while building Our Board Games, and why. Newest last.
 
 ### 1. Native Android with Kotlin + Jetpack Compose
 Smooth on phones and tablets, good accessibility support, one codebase that adapts to screen size.
@@ -63,6 +63,26 @@ profile, and the board reads them through a composition local, so switching play
 Two tiny generated WAV files (a soft wooden tap and a double tap) avoid licensing questions and stay gentle.
 Sounds, vibration and speech are opt-in, in keeping with "calm, nothing that startles".
 
-### 16. Releases from git tags via GitHub Actions
+### 16. Our Board Games keeps the old app ID
+Renaming the Android application ID would make the new version a separate app: every family member would have to
+reinstall and lose their profiles, photos and games. Only the visible name and icon changed; the code package is
+still `com.sumesh.ourchess`.
+
+### 17. Russian checkers, own engine
+The family chose Russian-style rules (flying kings, backward captures). No suitable small engine exists, so the app
+has its own: a full rules implementation with extensive tests, and an alpha-beta search that extends forced
+captures. Levels change search depth and add random moves at the bottom.
+
+### 18. Checkers puzzles mined by the engine
+Hand-composed combinations are easy to get subtly wrong under Russian rules. Instead, a miner (`CheckersPuzzleMiner`,
+run on demand) plays engine games and keeps positions with a single clearly-best line winning two or more pieces,
+where every move the player must find is unique. Hard ones are rare, so there are fewer of them.
+
+### 19. Ludo seats mix family and computer
+Ludo is a family game. Each seat can be a profile, a guest or the computer, on one shared device; results are recorded
+for each profile that played. Common Indian house rules were chosen (6 to start, three 6s lose the turn, safe stars,
+extra roll for capture and for reaching home); there are no blocking pairs.
+
+### 20. Releases from git tags via GitHub Actions
 Pushing `vX.Y.Z` builds, tests, signs and publishes an APK, so releases are repeatable and the version always
 matches the tag. The signing key is stored as encrypted GitHub secrets, with a backup on the owner's computer.

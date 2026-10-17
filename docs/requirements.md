@@ -1,6 +1,9 @@
 # Requirements
 
-This document records what Our Chess must do and why. It is the reference for future changes: if a change
+> The app began as *Our Chess* (chess only) and became **Our Board Games** in version 2.0 with checkers and Ludo.
+> The Android application ID stays `com.sumesh.ourchess` so installed copies update in place and keep all data.
+
+This document records what Our Board Games must do and why. It is the reference for future changes: if a change
 conflicts with something here, update this document deliberately rather than drifting from it.
 
 ## Purpose and audience
@@ -24,7 +27,7 @@ conflicts with something here, update this document deliberately rather than dri
 ## Functional requirements
 
 ### Starting the app
-- **Loading screen** shows family photos as the background, with the app name **"Our Chess"**,
+- **Loading screen** shows family photos as the background, with the app name **"Our Board Games"**,
   while the app gets ready (engine start-up, puzzle loading).
   - Each launch shows **3 photos chosen at random** from all available photos: the bundled family photos plus
     every player's own photos.
@@ -45,13 +48,43 @@ conflicts with something here, update this document deliberately rather than dri
   (Beginner, Easy, Medium, Hard, Expert), each with a one-line description.
 - The level controls both the computer opponent's strength and which puzzles are shown.
 
-### Main menu
-After choosing the level, the player chooses one of:
-1. **Play against computer**: a standard game.
-2. **Puzzles**: chess puzzles to solve.
-3. **Learn moves**: tutorials that teach useful moves.
+### Home
+After choosing the level, the player chooses a game: **Chess**, **Checkers** or **Ludo**. Each has its own small menu:
+- Chess: *Play against computer*, *Puzzles*, *Learn moves*.
+- Checkers: *Play against computer*, *Puzzles*, *Learn checkers*.
+- Ludo: *Continue game* (when one is in progress), *New game*, *How to play*.
 
-The menu also offers *My photos*, *Settings*, *Change level* and *Switch player*.
+Home also offers *My statistics*, *My photos*, *Settings*, *Change level* and *Switch player*.
+The difficulty level applies to every game.
+
+### Checkers (Russian rules, 8×8)
+- 12 pieces each on the dark squares; White moves first.
+- Men move one square diagonally forward but **capture forwards and backwards**.
+- **Kings fly**: they move and capture along a diagonal over any distance.
+- **Capturing is compulsory**, multi-captures must be completed, and a piece can't be jumped twice.
+- A man reaching the far row is crowned **immediately, even mid-capture**, and continues as a king.
+- A king that can continue capturing must land where it can.
+- Win when the opponent has no pieces or no move; draw on threefold repetition or 15 moves each with only kings moving and no captures.
+- Play the computer at levels 1–5, as White or Black; undo, hint, ask-before-move, saved games, results in statistics.
+- Multi-captures are entered hop by hop (tap each landing square) or by tapping the final square.
+- **Puzzles**: positions found automatically by the engine where one clear, unique line wins at least two pieces.
+- **Lessons**: moving, capturing, capturing backwards, multiple captures, crowning, the flying king, crowning mid-capture.
+
+### Ludo
+- 2–4 players. Each seat (colour) is a **family member** (passing the device), a **guest**, or the **computer**.
+  Two players sit opposite (Red and Yellow).
+- Rules: a 6 brings a token out; a 6 gives another roll; three 6s in a row lose the turn; landing on an opponent
+  (not on a safe square) sends it back and earns another roll; start squares and star squares are safe; each colour
+  finishes along its own home column; reaching home needs the exact number and earns another roll; the first to bring
+  all four tokens home wins.
+- The dice is large; the turn banner shows whose colour is playing. With only one possible move, it is made
+  automatically. Computer players roll and move by themselves.
+- Tokens hop square by square; tokens that can move pulse.
+- The game in progress is saved; results count for every family member who played.
+- **How to play**: a six-step hands-on tutorial with the real board.
+
+### Statistics
+- Per player, per game and per level: played, won, drawn, lost.
 
 ### Magnifying glass
 - A round magnifying-glass button at the top-right of every screen (except the loading screen).

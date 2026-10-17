@@ -1,6 +1,6 @@
 # Architecture
 
-Our Chess is a single-module Android app written in **Kotlin** with **Jetpack Compose**. It has no server and no
+Our Board Games (chess, checkers and Ludo) is a single-module Android app written in **Kotlin** with **Jetpack Compose**. It has no server and no
 network use at runtime: everything, including the chess engine, runs on the device.
 
 ## Screen flow
@@ -9,14 +9,15 @@ network use at runtime: everything, including the chess engine, runs on the devi
 flowchart LR
     Loading[Loading<br/>3 random photos] -- fade --> Welcome[Welcome<br/>choose / create player]
     Welcome --> Level[Difficulty 1–5]
-    Level --> Menu
-    Menu --> Game[Play vs computer]
-    Menu --> Puzzles
-    Menu --> Lessons[Learn moves] --> Lesson
-    Menu --> Photos[My photos]
-    Menu --> Settings
-    Menu -- Change level --> Level
-    Menu -- Switch player --> Welcome
+    Level --> Home
+    Home --> Chess[Chess menu] --> CG[Play / Puzzles / Lessons]
+    Home --> Checkers[Checkers menu] --> KG[Play / Puzzles / Lessons]
+    Home --> Ludo[Ludo menu] --> LG[Setup → Game / How to play]
+    Home --> Stats[My statistics]
+    Home --> Photos[My photos]
+    Home --> Settings
+    Home -- Change level --> Level
+    Home -- Switch player --> Welcome
 ```
 
 Navigation is a simple back stack of `Screen` values held in `AppViewModel`. The Android back button pops it.
@@ -30,7 +31,14 @@ app/src/main/java/com/sumesh/ourchess/
 │   ├── Model.kt             Side, PieceType, Piece, Square, Move, GameStatus
 │   ├── ChessGame.kt         One game: legal moves, make/undo, status, captures (wraps chesslib)
 │   └── MoveDescription.kt   Moves in plain words ("Knight takes pawn on f3, check") for speech/TalkBack
-├── engine/                  The computer opponent
+├── checkers/                Russian checkers — no Android dependencies
+│   ├── Checkers.kt          Position, legal moves (captures, flying kings, crowning), game, draws
+│   ├── CheckersAi.kt        Alpha-beta search with forced-capture extension; strength per level
+│   └── CheckersContent.kt   Lessons and the puzzle loader (assets/checkers_puzzles.csv)
+├── ludo/                    Ludo — no Android dependencies
+│   ├── Ludo.kt              Board geometry, state, rules (roll / move), computer player
+│   └── LudoSave.kt          Seats and the saved-game text format
+├── engine/                  The chess computer opponent
 │   ├── ChessEngine.kt       Interface: FEN in → UCI move out
 │   ├── UciProcess.kt        Runs the Stockfish executable and talks UCI to it
 │   ├── StockfishEngine.kt   Stockfish at a given strength (+ occasional random moves at low levels)
@@ -38,7 +46,8 @@ app/src/main/java/com/sumesh/ourchess/
 │   └── RandomMoveEngine.kt  Fallback opponent
 ├── data/                    Saved on the device (JSON files in app-private storage)
 │   ├── Profile.kt           Player profile + level names/descriptions
-│   ├── PlayerSettings.kt    Per-player settings (board theme, large print, sounds, speech, …)
+│   ├── PlayerSettings.kt    Per-player settings (board theme, large print, sounds, speech, zoom, …)
+│   ├── Stats.kt             Results per game and level
 │   ├── ProfileRepository.kt profiles.json
 │   ├── SavedGameStore.kt    games/<player>-L<level>.json — the game in progress
 │   └── PhotoRepository.kt   Start-up photos: bundled (assets/loading/) + players' own (photos/<player>/)
@@ -53,7 +62,11 @@ app/src/main/java/com/sumesh/ourchess/
     ├── settings/            Settings screen with live preview board
     ├── game/                Game screen + GameViewModel (play, undo, hint, save, game over)
     ├── loading/             PhotoBackdrop (bright → faded) and the loading title overlay
-    ├── welcome/, level/, menu/, puzzles/, tutorials/, photos/   One package per screen
+    ├── home/                Home (choose a game) and each game's own menu
+    ├── checkers/            Checkers board, game, puzzles and lessons screens; hop-by-hop move input
+    ├── ludo/                Ludo board, dice, setup, game and tutorial screens
+    ├── stats/               My statistics
+    ├── welcome/, level/, puzzles/, tutorials/, photos/   One package per screen (chess puzzles/lessons)
     └── theme/               Board palettes per theme, LocalPlayerSettings, typography (larger than Material defaults)
 ```
 
@@ -68,6 +81,17 @@ Screens are driven by immutable UI-state objects (`GameUiState`, `ExerciseUiStat
 Compose `mutableStateOf`. Each user action calls a view-model function, which updates the game and publishes a new
 state. View models are keyed per player and level (`viewModel(key = …)`) so leaving a screen and coming back resumes
 where the player left off.
+
+### Checkers and Ludo
+Both follow the chess pattern: pure rules in their own package, tested on the JVM, with a view model per screen
+and the shared building blocks (`BoardScreenLayout`, `MoveFeedback`, `LocalPlayerSettings`, statistics).
+
+- **Checkers** reuses the chess board's colours and coordinate strips. `CheckersInput` turns taps into moves,
+  hop by hop for multi-captures. The engine runs on `Dispatchers.Default`; the computer still "thinks" ≥ 0.7 s.
+- **Ludo**'s `LudoGameViewModel` drives turns: family seats tap the dice and a token, computer seats play
+  themselves with short pauses. The board is drawn on a 15×15 grid from `LudoGeometry` (the 52-square track,
+  home columns, yards, stars). Saved games use a small text format (`LudoSaved`), stored per host player.
+- Results go to `Profile.stats` via `AppViewModel.recordResult` — for Ludo, for every profile that had a seat.
 
 ### Per-player settings
 `PlayerSettings` is stored inside each profile. `App` provides the current player's settings through the
@@ -157,5 +181,8 @@ Small files in app-private storage, written atomically where it matters (write t
 | `ProfileRepositoryTest`, `SavedGameStoreTest` | Saving and reloading player data |
 | `PhotoRepositoryTest` | Adding (resized), removing photos; random picking of start-up photos |
 | `StockfishEngineTest` | Real Stockfish (desktop build): legal moves at every level, hints find mate, cancellation, level 4 beats level 1 |
+| `CheckersTest` | Russian rules: compulsory and backward captures, multi-jumps, crowning mid-capture, flying kings, landing rule, draws; AI strength |
+| `CheckersContentTest` | Every checkers lesson and puzzle is legal; puzzles win material; hop-by-hop input |
+| `LudoTest`, `LudoGameTest` | Geometry, leaving the yard, captures, safe squares, three 6s, exact finish, AI, full computer games, save/resume |
 | `MoveDescriptionTest` | Plain-words move descriptions (captures, castling, promotion, check, mate, en passant) |
 | `ScreenshotTest` | Renders every screen at phone and tablet sizes, and at 130% / 200% font size (Robolectric + Roborazzi) |

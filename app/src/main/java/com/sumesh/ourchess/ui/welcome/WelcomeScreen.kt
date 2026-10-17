@@ -63,7 +63,7 @@ fun WelcomeScreen(
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             PieceIcon(Side.WHITE, PieceType.KING, 88.dp)
             Spacer(Modifier.height(8.dp))
-            Text("Welcome to Our Chess", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+            Text("Welcome to Our Board Games", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
             Spacer(Modifier.height(4.dp))
             Text(
                 if (showForm) "Let's get you started." else "Who is playing today?",

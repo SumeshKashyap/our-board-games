@@ -20,11 +20,11 @@ higher, so always increase the version.
 1. Make sure `main` is committed, pushed, and the **CI** workflow is green.
 2. Run the VS Code task **Publish release (push version tag)** and enter the version (e.g. `1.2.0`), or:
    ```bash
-   git tag -a v1.2.0 -m "Our Chess v1.2.0"
+   git tag -a v1.2.0 -m "Our Board Games v1.2.0"
    git push origin v1.2.0
    ```
 3. Watch the **Actions** tab on GitHub. When the *Release* workflow finishes, the release appears under
-   **Releases** with `OurChess-v1.2.0.apk` attached and auto-generated release notes.
+   **Releases** with `OurBoardGames-v1.2.0.apk` attached and auto-generated release notes.
 
 To redo a failed release: delete the tag locally and on GitHub (`git tag -d v1.2.0 && git push origin :v1.2.0`),
 fix the problem, and tag again.
@@ -35,7 +35,7 @@ Public release APKs do **not** contain the private family photos (they are never
 with photos for family devices:
 
 1. Run the VS Code task **Build release APK (family, with photos)** with the same version number.
-   It writes `OurChess-vX.Y.Z-family.apk` in the project folder (git-ignored).
+   It writes `OurBoardGames-vX.Y.Z-family.apk` in the project folder (git-ignored).
 2. Install it with **Install release APK on device**, or copy the APK to the device and open it.
 
 Both editions are signed with the same key, so a device can update from one to the other.
@@ -67,6 +67,6 @@ cannot update an installed release build.
 
 ## Licence obligations
 
-The app bundles Stockfish (GPL-3.0), so Our Chess is GPL-3.0 as well. The repository is public and every release
+The app bundles Stockfish (GPL-3.0), so Our Board Games is GPL-3.0 as well. The repository is public and every release
 links to its source, which satisfies the licence. The Stockfish licence text is also included inside the app
 (`assets/licenses/stockfish-COPYING.txt`).

@@ -26,7 +26,33 @@ import com.sumesh.ourchess.ui.game.GameViewModel
 import com.sumesh.ourchess.ui.level.LevelScreen
 import com.sumesh.ourchess.ui.loading.LoadingOverlay
 import com.sumesh.ourchess.ui.loading.PhotoBackdrop
-import com.sumesh.ourchess.ui.menu.MenuScreen
+import com.sumesh.ourchess.checkers.CheckersColor
+import com.sumesh.ourchess.checkers.CheckersLessons
+import com.sumesh.ourchess.checkers.CheckersPiece
+import com.sumesh.ourchess.data.GameKind
+import com.sumesh.ourchess.data.Outcome
+import com.sumesh.ourchess.data.Stats
+import com.sumesh.ourchess.game.PieceType
+import com.sumesh.ourchess.game.Side
+import com.sumesh.ourchess.ui.checkers.CheckersGameScreen
+import com.sumesh.ourchess.ui.checkers.CheckersGameViewModel
+import com.sumesh.ourchess.ui.checkers.CheckersLessonListScreen
+import com.sumesh.ourchess.ui.checkers.CheckersLessonScreen
+import com.sumesh.ourchess.ui.checkers.CheckersLessonViewModel
+import com.sumesh.ourchess.ui.checkers.CheckersPuzzleScreen
+import com.sumesh.ourchess.ui.checkers.CheckersPuzzleViewModel
+import com.sumesh.ourchess.ui.checkers.PieceDisc
+import com.sumesh.ourchess.ui.common.PieceIcon
+import com.sumesh.ourchess.ui.home.GameMenuItem
+import com.sumesh.ourchess.ui.home.GameMenuScreen
+import com.sumesh.ourchess.ui.home.HomeScreen
+import com.sumesh.ourchess.ui.ludo.DiceFace
+import com.sumesh.ourchess.ui.ludo.LudoGameScreen
+import com.sumesh.ourchess.ui.ludo.LudoGameViewModel
+import com.sumesh.ourchess.ui.ludo.LudoSetupScreen
+import com.sumesh.ourchess.ui.ludo.LudoTutorialScreen
+import com.sumesh.ourchess.ui.ludo.LudoTutorialViewModel
+import com.sumesh.ourchess.ui.stats.StatsScreen
 import com.sumesh.ourchess.ui.photos.PhotosScreen
 import com.sumesh.ourchess.ui.puzzles.PuzzleScreen
 import com.sumesh.ourchess.ui.puzzles.PuzzleViewModel
@@ -91,18 +117,35 @@ private fun CurrentScreen(app: AppViewModel) {
             onChoose = app::chooseLevel,
             onBack = app::back,
         )
-        Screen.Menu -> MenuScreen(
+        Screen.Menu -> HomeScreen(
             profile = profile ?: return,
-            hasGameInProgress = app.savedGame(profile).let { it != null && it.moves.isNotEmpty() },
-            onPlay = { app.open(Screen.Game) },
-            onPuzzles = { app.open(Screen.Puzzles) },
-            onLessons = { app.open(Screen.Lessons) },
             photoCount = app.photosVersion.let { app.photosOf(profile).size },
+            onChess = { app.open(Screen.ChessMenu) },
+            onCheckers = { app.open(Screen.CheckersMenu) },
+            onLudo = { app.open(Screen.LudoMenu) },
+            onStats = { app.open(Screen.Stats) },
             onPhotos = { app.open(Screen.Photos) },
             onSettings = { app.open(Screen.Settings) },
             onChangeLevel = { app.open(Screen.Level) },
             onSwitchPlayer = app::switchPlayer,
         )
+        Screen.Stats -> StatsScreen(profile?.name.orEmpty(), profile?.stats ?: Stats(), onBack = app::back)
+
+        // --- Chess ---
+        Screen.ChessMenu -> {
+            val p = profile ?: return
+            val inProgress = app.savedGame(p).let { it != null && it.moves.isNotEmpty() }
+            GameMenuScreen(
+                "Chess",
+                icon = { PieceIcon(Side.WHITE, PieceType.KING) },
+                items = listOf(
+                    GameMenuItem("Play against computer", if (inProgress) "Continue your game" else "A full game at your level") { app.open(Screen.Game) },
+                    GameMenuItem("Puzzles", if (p.puzzlesSolved > 0) "${p.puzzlesSolved} solved so far" else "Find the winning move") { app.open(Screen.Puzzles) },
+                    GameMenuItem("Learn moves", "${p.lessonsDone.count { ':' !in it }} of ${Lessons.all.size} lessons done") { app.open(Screen.Lessons) },
+                ),
+                onBack = app::back,
+            )
+        }
         Screen.Game -> {
             val p = profile ?: return
             // One game per player and level, so leaving to the menu and coming back resumes it.
@@ -113,6 +156,7 @@ private fun CurrentScreen(app: AppViewModel) {
                     saved = app.savedGame(p),
                     onSave = { game -> app.saveGame(p, p.level, game) },
                     settings = settings,
+                    onResult = { app.recordResult(p.id, GameKind.CHESS, p.level, it) },
                 )
             }
             GameScreen(vm = vm, level = p.level, onBack = app::back)
@@ -130,6 +174,117 @@ private fun CurrentScreen(app: AppViewModel) {
             }
             PuzzleScreen(vm = vm, level = p.level, solvedCount = p.puzzlesSolved, onBack = app::back)
         }
+        Screen.Lessons -> LessonListScreen(
+            done = profile?.lessonsDone.orEmpty(),
+            onOpen = { app.open(Screen.Lesson(it.id)) },
+            onBack = app::back,
+        )
+        is Screen.Lesson -> {
+            val lesson = Lessons.byId(screen.id)
+            val vm = viewModel(key = "lesson-${lesson.id}") { LessonViewModel(lesson) { settings().autoQueen } }
+            LessonScreen(vm = vm, onComplete = { app.lessonDone(lesson.id) }, onBack = app::back)
+        }
+
+        // --- Checkers ---
+        Screen.CheckersMenu -> {
+            val p = profile ?: return
+            val inProgress = app.savedCheckers(p)?.substringAfter('|')?.isNotBlank() == true
+            val solved = app.progress("checkers.solved")
+            GameMenuScreen(
+                "Checkers",
+                icon = { PieceDisc(CheckersPiece(CheckersColor.BLACK, king = true), 56.dp) },
+                items = listOf(
+                    GameMenuItem("Play against computer", if (inProgress) "Continue your game" else "A full game at your level") { app.open(Screen.CheckersGame) },
+                    GameMenuItem("Puzzles", if (solved > 0) "$solved solved so far" else "Find the winning move") { app.open(Screen.CheckersPuzzles) },
+                    GameMenuItem(
+                        "Learn checkers",
+                        "${CheckersLessons.all.count { "checkers:${it.id}" in p.lessonsDone }} of ${CheckersLessons.all.size} lessons done",
+                    ) { app.open(Screen.CheckersLessons) },
+                ),
+                onBack = app::back,
+            )
+        }
+        Screen.CheckersGame -> {
+            val p = profile ?: return
+            val vm = viewModel(key = "checkers-${p.id}-${p.level}") {
+                CheckersGameViewModel(
+                    level = p.level,
+                    saved = app.savedCheckers(p),
+                    onSave = { app.saveCheckers(p, p.level, it) },
+                    onResult = { app.recordResult(p.id, GameKind.CHECKERS, p.level, it) },
+                    settings = settings,
+                )
+            }
+            CheckersGameScreen(vm, p.level, onBack = app::back)
+        }
+        Screen.CheckersPuzzles -> {
+            val p = profile ?: return
+            val key = "checkers.puzzle.L${p.level}"
+            val vm = viewModel(key = "checkers-puzzles-${p.id}-${p.level}") {
+                CheckersPuzzleViewModel(
+                    puzzles = app.checkersPuzzlesForLevel(p.level),
+                    startIndex = app.progress(key),
+                    onSolved = { app.setProgress("checkers.solved", app.progress("checkers.solved") + 1) },
+                    onAdvance = { app.setProgress(key, it) },
+                )
+            }
+            CheckersPuzzleScreen(vm, p.level, app.progress("checkers.solved"), onBack = app::back)
+        }
+        Screen.CheckersLessons -> CheckersLessonListScreen(
+            done = profile?.lessonsDone.orEmpty().filter { it.startsWith("checkers:") }.map { it.removePrefix("checkers:") }.toSet(),
+            onOpen = { app.open(Screen.CheckersLesson(it.id)) },
+            onBack = app::back,
+        )
+        is Screen.CheckersLesson -> {
+            val lesson = CheckersLessons.byId(screen.id)
+            val vm = viewModel(key = "checkers-lesson-${lesson.id}") { CheckersLessonViewModel(lesson) }
+            CheckersLessonScreen(vm, onComplete = { app.lessonDone("checkers:${lesson.id}") }, onBack = app::back)
+        }
+
+        // --- Ludo ---
+        Screen.LudoMenu -> {
+            val p = profile ?: return
+            val saved = app.savedLudo(p)
+            val items = buildList {
+                if (saved != null && saved.state.winner == null) {
+                    add(GameMenuItem("Continue game", saved.seats.joinToString(", ") { if (it.computer) "Computer" else it.name }) { app.open(Screen.LudoGame) })
+                }
+                add(GameMenuItem("New game", "Choose 2 to 4 players: family or computer") { app.open(Screen.LudoSetup) })
+                add(GameMenuItem("How to play", if ("ludo:tutorial" in p.lessonsDone) "Done ✓ — play it again any time" else "A short hands-on guide") { app.open(Screen.LudoTutorial) })
+            }
+            GameMenuScreen("Ludo", icon = { DiceFace(5, 52.dp) }, items = items, onBack = app::back)
+        }
+        Screen.LudoSetup -> LudoSetupScreen(
+            host = profile ?: return,
+            profiles = app.profiles,
+            onStart = app::startLudo,
+            onBack = app::back,
+        )
+        Screen.LudoGame -> {
+            val p = profile ?: return
+            val saved = app.savedLudo(p) ?: return
+            val vm = viewModel(key = "ludo-${p.id}-${app.ludoGameId}") {
+                LudoGameViewModel(
+                    seats = saved.seats,
+                    level = p.level,
+                    saved = saved,
+                    onSave = { app.saveLudo(p, it) },
+                    onFinished = { winner, seats ->
+                        for (seat in seats) {
+                            val id = seat.profileId ?: continue
+                            app.recordResult(id, GameKind.LUDO, p.level, if (seat == winner) Outcome.WON else Outcome.LOST)
+                        }
+                    },
+                )
+            }
+            LudoGameScreen(vm, onBack = app::back, onNewGame = { app.back(); app.open(Screen.LudoSetup) })
+        }
+        Screen.LudoTutorial -> {
+            val vm = viewModel(key = "ludo-tutorial") { LudoTutorialViewModel() }
+            LudoTutorialScreen(vm, onComplete = { app.lessonDone("ludo:tutorial") }, onBack = app::back)
+        }
+
+        // --- Player ---
         Screen.Photos -> PhotosScreen(
             photos = app.photosVersion.let { profile?.let(app::photosOf).orEmpty() },
             repository = app.photos,
@@ -144,19 +299,5 @@ private fun CurrentScreen(app: AppViewModel) {
             onChange = app::updateSettings,
             onBack = app::back,
         )
-        Screen.Lessons -> LessonListScreen(
-            done = profile?.lessonsDone.orEmpty(),
-            onOpen = { app.open(Screen.Lesson(it.id)) },
-            onBack = app::back,
-        )
-        is Screen.Lesson -> {
-            val lesson = Lessons.byId(screen.id)
-            val vm = viewModel(key = "lesson-${lesson.id}") { LessonViewModel(lesson) { settings().autoQueen } }
-            LessonScreen(
-                vm = vm,
-                onComplete = { app.lessonDone(lesson.id) },
-                onBack = app::back,
-            )
-        }
     }
 }

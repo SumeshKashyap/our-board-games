@@ -25,7 +25,7 @@ Stockfish 19 opponent tuned per level, Hint button in games, natural "thinking" 
 - Games saved automatically and resumed after the app is closed ("Continue your game" in the menu)
 - Game-over dialog with *Play again*
 - Material balance ("+3") next to captured pieces
-- Renamed to **Our Chess**, with a launcher icon
+- Renamed to **Our Board Games**, with a launcher icon
 - Loading screen: 3 random photos for 5 seconds, then fading into the background of the player screen
 - *My photos*: each player can add their own pictures to the start-up photos
 - Documentation, GPL-3.0 licence, public GitHub repository
@@ -40,8 +40,16 @@ Stockfish 19 opponent tuned per level, Hint button in games, natural "thinking" 
 - Board coordinates moved outside the squares
 - Magnifying glass to zoom the whole app in or out (80–150%), remembered per player
 
+### Version 2.0: Our Board Games
+- Renamed from *Our Chess* (same app ID, so devices update in place); new dice icon
+- New home screen with a menu for each game
+- **Checkers** (Russian rules) with its own engine (levels 1–5), puzzles mined by the engine, and 7 lessons
+- **Ludo** for 2–4 players, mixing family members and computer players, with a hands-on tutorial
+- **My statistics** for every player
+
 ## Ideas for later
-- Two players on one device
+- Two players on one device for chess and checkers
+- More checkers puzzles at the harder levels (they are rare in engine games)
 - Move list and simple game review ("what was my mistake?")
 - More lessons (how each piece moves, basic checkmates, opening principles)
 - Daily puzzle

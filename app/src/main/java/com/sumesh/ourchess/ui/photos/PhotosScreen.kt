@@ -63,7 +63,7 @@ fun PhotosScreen(
     MenuPage {
         ScreenHeader("My photos", onBack = onBack, backLabel = "Menu")
         Text(
-            "Your photos appear when Our Chess starts, together with the family's. They stay on this device.",
+            "Your photos appear when Our Board Games starts, together with the family's. They stay on this device.",
             style = MaterialTheme.typography.bodyLarge,
         )
         BigButton(

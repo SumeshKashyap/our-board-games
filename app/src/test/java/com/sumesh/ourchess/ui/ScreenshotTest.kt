@@ -7,6 +7,10 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.sumesh.ourchess.data.BoardTheme
+import com.sumesh.ourchess.data.GameKind
+import com.sumesh.ourchess.data.Outcome
+import com.sumesh.ourchess.ludo.LudoColor
+import com.sumesh.ourchess.ludo.LudoSeat
 import com.sumesh.ourchess.data.PlayerSettings
 import com.sumesh.ourchess.engine.ChessEngine
 import com.sumesh.ourchess.game.Side
@@ -121,6 +125,55 @@ class ScreenshotTest {
 
     @Test @Config(qualifiers = TABLET)
     fun gameTabletZoomed() { app { withPlayers(); setZoom(1.3f); open(Screen.Game) }; capture("17_game_tablet_zoom130") }
+
+    @Test fun chessMenu() { app { withPlayers(); open(Screen.ChessMenu) }; capture("30_chess_menu") }
+
+    @Test fun checkersMenu() { app { withPlayers(); open(Screen.CheckersMenu) }; capture("31_checkers_menu") }
+
+    @Test fun checkersGame() { app { withPlayers(); open(Screen.CheckersGame) }; capture("32_checkers_game") }
+
+    @Test fun checkersLesson() { app { withPlayers(); open(Screen.CheckersLesson("flying")) }; capture("33_checkers_lesson") }
+
+    @Test fun checkersPuzzle() { app { withPlayers(); open(Screen.CheckersPuzzles) }; capture("34_checkers_puzzle") }
+
+    @Test fun ludoMenu() { app { withPlayers(); open(Screen.LudoMenu) }; capture("35_ludo_menu") }
+
+    @Test fun ludoSetup() { app { withPlayers(); open(Screen.LudoSetup) }; capture("36_ludo_setup") }
+
+    @Test fun ludoGame() {
+        app {
+            withPlayers()
+            open(Screen.LudoSetup)
+            startLudo(
+                listOf(
+                    LudoSeat(LudoColor.RED, "Asha", current?.id, computer = false),
+                    LudoSeat(LudoColor.GREEN, "Computer", null, computer = true),
+                    LudoSeat(LudoColor.YELLOW, "Ravi", null, computer = false),
+                    LudoSeat(LudoColor.BLUE, "Computer", null, computer = true),
+                ),
+            )
+        }
+        capture("37_ludo_game")
+    }
+
+    @Test @Config(qualifiers = TABLET)
+    fun ludoGameTablet() {
+        app { withPlayers(); open(Screen.LudoSetup); startLudo(LudoColor.forPlayers(2).map { LudoSeat(it, it.label, null, computer = false) }) }
+        capture("38_ludo_game_tablet")
+    }
+
+    @Test fun ludoTutorial() { app { withPlayers(); open(Screen.LudoTutorial) }; capture("39_ludo_tutorial") }
+
+    @Test fun stats() {
+        app {
+            withPlayers()
+            val id = current!!.id
+            recordResult(id, GameKind.CHESS, 3, Outcome.WON); recordResult(id, GameKind.CHESS, 3, Outcome.LOST)
+            recordResult(id, GameKind.LUDO, 3, Outcome.WON)
+            open(Screen.Stats)
+        }
+        capture("40_stats")
+    }
 
     @Test fun photos() { app { withPlayers(); open(Screen.Photos) }; capture("12_photos") }
 

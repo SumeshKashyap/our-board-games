@@ -43,6 +43,8 @@ class ProfileRepository(private val file: File) {
         .put("puzzlesSolved", puzzlesSolved)
         .put("lessonsDone", JSONArray(lessonsDone.toList()))
         .put("settings", settings.toJson())
+        .put("stats", stats.toJson())
+        .put("progress", JSONObject(progress))
 
     private fun JSONObject.toProfile(): Profile {
         val next = optJSONObject("nextPuzzle")
@@ -56,6 +58,8 @@ class ProfileRepository(private val file: File) {
             puzzlesSolved = optInt("puzzlesSolved", 0),
             lessonsDone = done?.let { a -> (0 until a.length()).map { a.getString(it) }.toSet() }.orEmpty(),
             settings = PlayerSettings.fromJson(optJSONObject("settings")),
+            stats = Stats.fromJson(optJSONObject("stats")),
+            progress = optJSONObject("progress")?.let { p -> p.keys().asSequence().associateWith { p.getInt(it) } }.orEmpty(),
         )
     }
 }

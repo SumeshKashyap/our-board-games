@@ -129,7 +129,7 @@ fun ChessBoard(
         var dragPos by remember { mutableStateOf(Offset.Zero) }
 
         Box(Modifier.size(boardSize + gutter)) {
-            Coordinates(flipped, squareSize, gutter)
+            BoardCoordinates(flipped, squareSize, gutter)
             Box(
                 Modifier
                     .offset(x = gutter)
@@ -265,7 +265,7 @@ fun ChessBoard(
 
 /** Rank numbers down the left and file letters along the bottom, outside the board, honouring orientation. */
 @Composable
-private fun Coordinates(flipped: Boolean, squareSize: Dp, gutter: Dp) {
+internal fun BoardCoordinates(flipped: Boolean, squareSize: Dp, gutter: Dp) {
     // Sized from the square (not the system font size) so the labels always fit their strip.
     val style = TextStyle(
         fontSize = with(LocalDensity.current) { (squareSize * 0.32f).toSp() },
@@ -287,7 +287,7 @@ private fun Coordinates(flipped: Boolean, squareSize: Dp, gutter: Dp) {
     }
 }
 
-private const val COORD_GUTTER = 0.45f
+internal const val COORD_GUTTER = 0.45f
 
 /**
  * One piece. In large print, a letter badge (K, Q, R, B, N) in the corner names it.

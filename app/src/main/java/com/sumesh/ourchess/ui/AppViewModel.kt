@@ -11,7 +11,14 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.sumesh.ourchess.checkers.CheckersPuzzle
+import com.sumesh.ourchess.checkers.CheckersPuzzles
+import com.sumesh.ourchess.data.GameKind
+import com.sumesh.ourchess.data.Outcome
 import com.sumesh.ourchess.data.PhotoRepository
+import com.sumesh.ourchess.ludo.LudoSaved
+import com.sumesh.ourchess.ludo.LudoSeat
+import com.sumesh.ourchess.ludo.LudoState
 import com.sumesh.ourchess.data.PlayerSettings
 import com.sumesh.ourchess.data.Profile
 import com.sumesh.ourchess.data.ProfileRepository
@@ -37,6 +44,17 @@ sealed interface Screen {
     data object Lessons : Screen
     data object Photos : Screen
     data object Settings : Screen
+    data object Stats : Screen
+    data object ChessMenu : Screen
+    data object CheckersMenu : Screen
+    data object CheckersGame : Screen
+    data object CheckersPuzzles : Screen
+    data object CheckersLessons : Screen
+    data class CheckersLesson(val id: String) : Screen
+    data object LudoMenu : Screen
+    data object LudoSetup : Screen
+    data object LudoGame : Screen
+    data object LudoTutorial : Screen
     data class Lesson(val id: String) : Screen
 }
 
@@ -47,6 +65,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val savedGames = SavedGameStore(File(app.filesDir, "games"))
     private val allPuzzles: List<Puzzle> by lazy { PuzzleRepository.load(app.assets) }
     val photos = PhotoRepository(app)
+    private val allCheckersPuzzles: List<CheckersPuzzle> by lazy { runCatching { CheckersPuzzles.load(app.assets) }.getOrDefault(emptyList()) }
 
     /** Most recently used first. */
     var profiles by mutableStateOf(loadProfiles())
@@ -164,6 +183,45 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun setZoom(zoom: Float) {
         val profile = current
         if (profile == null) guestZoom = zoom else updateSettings(profile.settings.copy(zoom = zoom))
+    }
+
+    // --- Results and progress ---
+
+    /** Records a finished game for a player (not necessarily the current one: Ludo can have several). */
+    fun recordResult(profileId: String, game: GameKind, level: Int, outcome: Outcome) {
+        val profile = (if (current?.id == profileId) current else profiles.firstOrNull { it.id == profileId }) ?: return
+        val updated = save(profile.copy(stats = profile.stats.add(game, level, outcome)))
+        if (current?.id == profileId) current = updated
+    }
+
+    fun progress(key: String): Int = current?.progress?.get(key) ?: 0
+
+    fun setProgress(key: String, value: Int) {
+        val profile = current ?: return
+        current = save(profile.copy(progress = profile.progress + (key to value)))
+    }
+
+    fun checkersPuzzlesForLevel(level: Int): List<CheckersPuzzle> =
+        allCheckersPuzzles.filter { it.level == level }.ifEmpty { allCheckersPuzzles }
+
+    fun savedCheckers(profile: Profile): String? = savedGames.loadText(profile.id, "checkers-L${profile.level}")
+
+    fun saveCheckers(profile: Profile, level: Int, text: String) = savedGames.saveText(profile.id, "checkers-L$level", text)
+
+    fun savedLudo(profile: Profile): LudoSaved? = savedGames.loadText(profile.id, "ludo")?.let(LudoSaved::decode)
+
+    fun saveLudo(profile: Profile, game: LudoSaved?) = savedGames.saveText(profile.id, "ludo", game?.encode())
+
+    /** Each new Ludo game gets a fresh screen state. */
+    var ludoGameId by mutableIntStateOf(0)
+        private set
+
+    fun startLudo(seats: List<LudoSeat>) {
+        val profile = current ?: return
+        saveLudo(profile, LudoSaved(seats, LudoState.newGame(seats.map { it.color })))
+        ludoGameId++
+        back() // leave the setup screen
+        open(Screen.LudoGame)
     }
 
     fun updateSettings(settings: PlayerSettings) {

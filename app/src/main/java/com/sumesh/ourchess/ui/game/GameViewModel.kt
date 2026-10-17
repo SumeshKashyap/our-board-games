@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sumesh.ourchess.data.Outcome
 import com.sumesh.ourchess.data.PlayerSettings
 import com.sumesh.ourchess.data.SavedGame
 import com.sumesh.ourchess.game.MoveEvent
@@ -74,6 +75,8 @@ class GameViewModel(
     private val onSave: (SavedGame) -> Unit = {},
     /** The current player's settings (read each time, so changes apply straight away). */
     private val settings: () -> PlayerSettings = { PlayerSettings() },
+    /** Called once when a game finishes (not for a finished game that was resumed). */
+    private val onResult: (Outcome) -> Unit = {},
 ) : ViewModel() {
 
     private var game = ChessGame()
@@ -88,6 +91,7 @@ class GameViewModel(
     private var hintLoading = false
     private var hintTarget: Square? = null
     private var gameOverDismissed = false
+    private var resultRecorded = false
     private var pendingConfirm: Move? = null
     private var pendingConfirmText: String? = null
     private var lastMoveEvent: MoveEvent? = null
@@ -100,7 +104,8 @@ class GameViewModel(
         if (saved != null) {
             humanSide = saved.humanSide
             saved.moves.forEach { if (!game.makeUciMove(it)) return@forEach }
-            gameOverDismissed = game.status().isOver // don't re-announce an old result
+            gameOverDismissed = game.status().isOver // don't re-announce or re-count an old result
+            resultRecorded = gameOverDismissed
             publish()
             maybePlayComputerMove()
         }
@@ -183,6 +188,7 @@ class GameViewModel(
         game.undo()
         while (game.sideToMove != humanSide && game.moveCount > 0) game.undo()
         gameOverDismissed = false
+        resultRecorded = false
         save()
         publish()
         maybePlayComputerMove()
@@ -197,6 +203,7 @@ class GameViewModel(
         pendingPromotion = null
         animation = null
         gameOverDismissed = false
+        resultRecorded = false
         save()
         publish()
         maybePlayComputerMove()
@@ -209,6 +216,19 @@ class GameViewModel(
 
     /** Starts a new game with the same colours. */
     fun playAgain() = newGame(humanSide)
+
+    private fun checkResult() {
+        val status = game.status()
+        if (!status.isOver || resultRecorded) return
+        resultRecorded = true
+        onResult(
+            when {
+                status != GameStatus.CHECKMATE -> Outcome.DRAWN
+                game.sideToMove != humanSide -> Outcome.WON
+                else -> Outcome.LOST
+            },
+        )
+    }
 
     private fun save() = onSave(SavedGame(humanSide, game.moves.map { it.uci }))
 
@@ -261,6 +281,7 @@ class GameViewModel(
         select(null)
         animation = if (animate) MoveAnimation(nextAnimationId++, move.from, move.to, HUMAN_MOVE_MS) else null
         save()
+        checkResult()
         publish()
         maybePlayComputerMove()
     }
@@ -281,6 +302,7 @@ class GameViewModel(
                 lastMoveEvent = MoveEvent(nextEventId++, description!!, byOpponent = true, capture = description.contains(" takes "))
                 animation = MoveAnimation(nextAnimationId++, move.from, move.to, COMPUTER_MOVE_MS)
                 save()
+                checkResult()
             }
             publish()
         }

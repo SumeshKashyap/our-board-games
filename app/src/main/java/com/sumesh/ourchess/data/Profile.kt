@@ -11,6 +11,9 @@ data class Profile(
     val puzzlesSolved: Int = 0,
     val lessonsDone: Set<String> = emptySet(),
     val settings: PlayerSettings = PlayerSettings(),
+    val stats: Stats = Stats(),
+    /** Small counters for checkers and Ludo, e.g. "checkers.puzzle.L3" → next puzzle, "checkers.solved". */
+    val progress: Map<String, Int> = emptyMap(),
 )
 
 object Levels {

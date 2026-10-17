@@ -1,32 +1,36 @@
-# Our Chess
+# Our Board Games
 
-A calm, simple chess app for Android phones and tablets, made for the whole family, especially older players.
-Play against the computer at five difficulty levels, solve puzzles, and learn useful moves with hands-on lessons.
+A calm, simple collection of board games for Android phones and tablets, made for the whole family, especially older players:
+**Chess**, **Checkers** and **Ludo**. Play against the computer at five difficulty levels, play Ludo together with family
+on one device, solve puzzles, and learn with hands-on lessons.
 
 <p>
-  <img src="docs/screenshots/menu.png" width="240" alt="Main menu">
-  <img src="docs/screenshots/game.png" width="240" alt="Playing against the computer">
-  <img src="docs/screenshots/lesson.png" width="240" alt="A lesson">
+  <img src="docs/screenshots/menu.png" width="240" alt="Home: choose a game">
+  <img src="docs/screenshots/game.png" width="240" alt="Playing chess against the computer">
+  <img src="docs/screenshots/ludo.png" width="240" alt="Ludo with family and computer players">
 </p>
 
 ## Features
 
+- **Three games**:
+  - **Chess** against [Stockfish](https://stockfishchess.org), with 600 puzzles and 7 lessons.
+  - **Checkers** (Russian rules: flying kings, men capture backwards, compulsory captures) against a built-in engine, with puzzles and 7 lessons.
+  - **Ludo** for 2–4 players: any mix of family members (passing the device) and computer players, with a hands-on tutorial.
 - **Easy on the eyes**: large, bold, high-contrast pieces on a soft, low-glare board; large text and buttons with words, not just icons.
-- **Simple to play**: tap a piece, then tap where it should go (dragging works too). Legal moves are shown as dots, and the computer's last move stays highlighted.
-- **Player profiles**: each family member enters just their name. Their level, puzzle progress, finished lessons and game in progress are remembered.
+- **Simple to play**: tap a piece, then tap where it should go. Possible moves are shown, and the computer's last move stays highlighted.
+- **Player profiles**: each family member enters just their name. Their level, progress, settings, saved games and statistics are remembered.
+- **My statistics**: games won, drawn and lost, per game and level.
 - **Family photos**: the app opens with three random family pictures, and every player can add their own (kept privately on the device).
-- **Five difficulty levels**, from *Beginner* to *Expert*, powered by [Stockfish](https://stockfishchess.org) and scaled to the player.
-- **Puzzles**: 600 hand-picked puzzles (120 per level) from the [Lichess puzzle database](https://database.lichess.org/#puzzles), with hints and solutions.
-- **Learn moves**: interactive lessons on castling, promotion, en passant, forks, pins, skewers and back-rank mate.
-- **Forgiving**: unlimited undo, a hint button, no clock, optional "ask before each move", and games are saved automatically.
+- **Five difficulty levels**, from *Beginner* to *Expert*, for every game.
+- **Forgiving**: undo, hints, no clock, optional "ask before each move", and games are saved automatically.
 - **Settings for each player**: board colours (including high contrast), large-print letters on pieces, move sounds, vibration, and moves read aloud.
 - **Magnifying glass**: zoom the whole app in or out with one tap; each player's size is remembered.
-- **Accessible**: works with large system text (up to 200%) and with TalkBack; board coordinates sit outside the squares.
+- **Accessible**: works with large system text (up to 200%) and with TalkBack.
 - **Works on phones and tablets**, in portrait and landscape.
 
 ## Install
 
-Download the latest `OurChess-vX.Y.Z.apk` from the **[Releases](../../releases)** page and open it on your Android device
+Download the latest `OurBoardGames-vX.Y.Z.apk` from the **[Releases](../../releases)** page and open it on your Android device
 (Android 8.0 or newer, 64-bit ARM). You may need to allow "Install unknown apps" for your browser or file manager.
 Step-by-step instructions for family members: **[docs/install-guide.md](docs/install-guide.md)**.
 
@@ -60,10 +64,11 @@ Full setup instructions: **[docs/development.md](docs/development.md)**.
 
 ## Credits and licence
 
-Our Chess is free software, licensed under the **GNU General Public License v3.0** ([LICENSE](LICENSE)),
+Our Board Games is free software, licensed under the **GNU General Public License v3.0** ([LICENSE](LICENSE)),
 because it bundles Stockfish.
 
 - **Chess engine**: [Stockfish](https://github.com/official-stockfish/Stockfish) 19, GPL-3.0
 - **Chess rules**: [chesslib](https://github.com/bhlangonijr/chesslib), Apache-2.0
 - **Pieces**: "cburnett" set by Colin M.L. Burnett, GPLv2+ / CC BY-SA 3.0 (outlines thickened for readability)
-- **Puzzles**: [Lichess puzzle database](https://database.lichess.org/#puzzles), CC0
+- **Checkers and Ludo engines**: written for this app
+- **Chess puzzles**: [Lichess puzzle database](https://database.lichess.org/#puzzles), CC0

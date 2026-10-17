@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sumesh.ourchess.game.PieceType
@@ -122,7 +123,7 @@ fun LoadingOverlay(hasPhotos: Boolean, isReady: Boolean, onDone: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (!hasPhotos) PieceIcon(Side.WHITE, PieceType.KING, 120.dp)
-            Text("Our Chess", color = Color.White, fontSize = 52.sp, fontWeight = FontWeight.Bold)
+            Text("Our Board Games", color = Color.White, fontSize = 46.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
             Spacer(Modifier.height(4.dp))
             if (minTimePassed && !isReady) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {

@@ -1,0 +1,53 @@
+id,level,position,solution,goal
+C1,1,B:wa1;we1;wb2;we3;wg3;wc5;bh6;wc7;bb8;bd8;bf8;bh8,d8:b6:d4:f2:h4,Win 4 pieces
+C2,1,W:wc1;wg1;wb2;wd2;wf2;wh2;wa3;wc3;be3;wg3;ba5;bc5;be5;bh6;ba7;bg7;bd8;bf8;bh8,d2:f4:d6:b4,Win 3 pieces
+C3,1,B:wc1;we1;wg1;wb2;wh2;wa3;we3;wd4;wf4;ba5;wf6;bh6;bc7;be7;bg7;bd8;bh8,g7:e5:c3:a1,Win 5 pieces and make a king
+C4,1,B:wa1;we1;wg1;wd2;wa3;wb4;wf4;wa5;bg5;bh6;bc7;we7;bg7;bb8;bd8;bh8,g5:e3:c1,Win 4 pieces and make a king
+C5,1,W:wa1;wc1;we1;wg1;wf2;bh2;wd4;bf4;bb6;bf6;bc7;be7;WKf8;bh8,f8:c5:a7,Win 2 pieces
+C6,1,B:we1;wb2;wa3;wc3;wg3;wb4;wd4;wf4;bh4;ba5;bc5;bd6;bh6;be7;bf8;bh8,c5:e3:g5,Win 2 pieces
+C7,1,W:wa1;wa3;ba5;bc5;be5;BKg5;bd6;WKh8,h8:d4:a7,Win 2 pieces
+C8,1,B:wg1;wb2;wh2;we3;wg3;wb4;wd4;ba5;bc5;bb6;bf6;bh6;bb8;bf8;bh8,c5:a3:c1:g5,Win 5 pieces and make a king
+C9,1,B:wa1;we1;wd2;wa3;we3;wf4;bd6;wf6;ba7;be7;bg7;bb8;bd8;bh8,g7:e5:g3,Win 2 pieces
+C10,1,B:wa1;we1;wg1;wd2;wh2;wa3;wc3;wg3;wb4;wd4;wf4;be5;bg5;bb6;bd6;bf6;bh6;ba7;bb8;bd8;bh8,g5:e3:c1,Win 4 pieces and make a king
+C11,1,W:bb2;wd2;wh2;wa3;wb4;be5;bb6;bd6;WKf8,f8:c5:a7,Win 2 pieces
+C12,1,W:wa1;wc1;we1;wg1;bf2;wh2;bf4;bd6;ba7;be7;bf8;bh8,e1:g3:e5:c7,Win 3 pieces
+C13,1,B:wa1;wd2;wh2;ba3;wg3;wd4;wf4;bc5;bb6;bf6;bh6;be7,c5:e3:c1,Win 4 pieces and make a king
+C14,1,B:wg1;wb2;wd2;bh2;wa3;we3;wd4;bh4;ba5;be5;bg5;wa7;bg7;bb8,e5:c3:a1,Win 4 pieces and make a king
+C15,1,B:wa1;wc1;wd2;wh2;wa3;wc3;we3;bc5;we5;bf6;bg7;bb8;bf8;bh8,f6:d4:f2,Win 2 pieces
+C16,1,W:we1;wg1;wc3;wd4;wf4;wh4;bg5;bb6;bd6;bg7;bh8,f4:h6:f8:c5:a7,Win 6 pieces and make a king
+C17,1,B:wa1;wc1;wb2;wf2;wh2;ba3;wc3;wd4;wf4;ba5;bg5;bb6;bh6;bf8;bh8,g5:e3:g1,Win 4 pieces and make a king
+C18,1,B:wc1;wg1;wb2;wh2;wc3;we3;wg3;ba5;wg5;bb6;bd6;bf6;bh6;ba7;bg7;bd8;bh8,h6:f4:d2:b4,Win 3 pieces
+C19,1,B:wf2;BKh2;wa3;wc3;wf4;bh8,h2:e5:a1,Win 2 pieces
+C20,1,B:wg1;wb2;wf2;wh2;wg3;wd4;wf4;bh4;wa5;bc5;be5;bd6;bh6;bd8;bf8;bh8,e5:c3:a1,Win 4 pieces and make a king
+C21,2,B:BKg1;bf2;WKh2;wd4;wf4;bh4,f2-e1,Win 2 pieces and make a king
+C22,2,W:WKe5;wg7;BKf8,g7-h8,Win 2 pieces and make a king
+C23,2,W:wa1;BKc1;we1;wg1;wa3;wb4;wa5;bh6;bc7;we7;bg7;bb8;bd8;bh8,e7-f8,Win 2 pieces and make a king
+C24,2,W:BKa1;wa3;bg5;bh6;wc7;be7;bf8;bh8,c7-b8,Win 2 pieces and make a king
+C25,2,W:wb2;wd2;wh2;wa3;wb4;bc5;be5;bd6;bc7;wg7;bh8,g7-f8,Win 2 pieces and make a king
+C26,2,W:wa1;ba3;bb4;bc5;wf6;wg7;bh8,g7-f8,Win 2 pieces and make a king
+C27,2,W:wa3;bc3;wh4;wg7;BKf8,g7-h8,Win 2 pieces and make a king
+C28,2,W:BKa1;wc1;wg1;wd2;wf2;wh2;wa3;wg3;wh4;bf6;bh6;ba7;wc7;be7;bg7;bd8;bf8;bh8,c7-b8,Win 2 pieces and make a king
+C29,2,W:bg3;wb4;BKe5;bf6;wa7;wg7;bb8;bh8,g7-f8,Win 2 pieces and make a king
+C30,2,W:BKa1;bf2;bb6;we7,e7-f8,Win 2 pieces and make a king
+C31,2,W:wa1;wc1;wb2;ba3;wf4;ba5;bc5;ba7;wc7;bg7;bd8,c7-b8,Win 2 pieces and make a king
+C32,2,W:BKg1;BKa3;wg7,g7-h8,Win 2 pieces and make a king
+C33,2,B:wa1;we1;wg1;bd2;wa3;wg3;wb4;wd4;wh4;wc5;bd6;bf6;bh6;ba7;bc7;be7;bd8;bh8,d2-c1,Win 2 pieces and make a king
+C34,2,B:bf2;wa3;wc3;wa5;WKh8,f2-g1,Win 2 pieces and make a king
+C35,2,W:BKc1;bc5;wg7,g7-h8,Win 2 pieces and make a king
+C36,2,B:wb2;wf2;bh2;WKc3;BKf4;ba7;WKf8,h2-g1,Win 2 pieces and make a king
+C37,2,W:bd6;wh6;wa7;BKh8,a7-b8,Win 2 pieces and make a king
+C38,3,W:BKg1;bd4;be5;wb6;bh6;bh8,b6-c7 d4-c3 c7-d8,Win 2 pieces and make a king
+C39,3,B:wa1;we1;wb2;wf2;wa3;we3;wg3;wb4;bd4;wf4;bd6;wf6;bh6;ba7;bc7;be7;bg7;bd8;bh8,e7:g5 e3:c5:e7 g5:e3:g1,Win 3 pieces and make a king
+C40,3,W:BKa1;be3;bb6;wd6,d6-e7 e3-f2 e7-f8,Win 2 pieces and make a king
+C41,3,W:wc1;wb2;ba3;we3;wb4;wd4;bc5;bb6;bd6;wh6;bh8,b4-a5 c5-b4 a5:c7:e5,Win 2 pieces
+C42,3,W:BKb4;wf4;be5;wh6;bg7,h6:f8:a3 e5:g3 a3-c5,Win 5 pieces and make a king
+C43,4,B:wa1;we1;wb2;we3;wg3;wc5;we5;bh6;bc7;bb8;bd8;bf8;bh8,c7-d6 e5:c7 d8:b6:d4:f2:h4,Win 3 pieces
+C44,4,W:wa1;wc1;we1;wg1;wd2;wh2;bd4;bf4;bd6;ba7;be7;bf8;bh8,d2-e3 d4:f2 e1:g3:e5:c7,Win 2 pieces
+C45,4,W:wc1;wg1;wb2;wd2;wf2;wh2;wa3;wc3;wg3;bh4;ba5;bc5;be5;bg5;bc7;bg7;bb8;bd8;bh8,g3-f4 g5:e3 d2:f4:d6:b4,Win 2 pieces
+C46,4,W:wg1;wf2;wa3;wc3;BKe3;wg3;wb4;wd4;wh4;wc5;be5;bb6;bf6;bh6;ba7;be7;bd8;bh8,c5-d6 e3:c5 d6:f8,Win 2 pieces and make a king
+C47,4,W:wg1;wd2;wf2;wh2;wa3;wc3;we3;wg3;bd4;wf4;bh4;wa5;bc5;bd6;bf6;bh6;be7;bb8;bf8;bh8,c3:e5:c7 b8:d6 f4-g5 h6:f4 g3:e5:c7,Win 2 pieces
+C48,4,W:BKc1;we1;wg1;wd2;wh2;we3;wg3;wd4;bg5;bb6;bd6;bf6;bh6;be7;bf8;bh8,d2-c3 c1:f4 g3:e5:c7:a5,Win 4 pieces
+C49,4,W:wa1;BKc1;wg1;wd2;we3;wg3;wh4;be5;bb6;bh6;be7;bb8;bf8,e3-f4 c1:e3:g5 h4:f6:d8:a5,Win 5 pieces and make a king
+C50,5,B:wa1;we1;wb2;wa3;we3;wg3;bc5;we5;bh6;bc7;bb8;bd8;bf8;bh8,c5-b4 a3:c5 c7-d6 e5:c7 d8:b6:d4:f2:h4,Win 2 pieces
+C51,5,W:BKc1;we3;wg3;wf4;be5;bd6;wh6;ba7;be7;bh8,e3-d4 e5:c3 g3-h4 c1:g5 h4:f6:d8,Win 4 pieces and make a king
+C52,5,W:wa1;wc1;wg1;wd2;ba3;we3;wg3;wh4;be5;bb6;bh6;be7;bb8;bf8,c1-b2 a3:c1 e3-f4 c1:e3:g5 h4:f6:d8:a5,Win 2 pieces and make a king

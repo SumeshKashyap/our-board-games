@@ -1,6 +1,6 @@
 # Development guide
 
-Our Chess is built entirely from **VS Code** with the Android command-line tools. Android Studio is not needed.
+Our Board Games is built entirely from **VS Code** with the Android command-line tools. Android Studio is not needed.
 
 ## One-time setup (Linux)
 
@@ -75,7 +75,7 @@ If `adb devices` shows `unauthorized`, accept the prompt on the device; if it sh
 
 ## Family photos (loading screen)
 
-Put pictures (`.jpg`, `.jpeg` or `.png`) in **`app/images/`**. They are shown behind the "Our Chess" title when the
+Put pictures (`.jpg`, `.jpeg` or `.png`) in **`app/images/`**. They are shown behind the "Our Board Games" title when the
 app starts. The folder is **git-ignored**: the photos never leave this computer, and only APKs built here include
 them. Builds elsewhere show a plain green loading screen.
 

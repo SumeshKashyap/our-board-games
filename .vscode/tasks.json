@@ -52,7 +52,7 @@
     {
       "label": "Build release APK (family, with photos)",
       "type": "shell",
-      "command": "./gradlew assembleRelease -PappVersion=${input:version} && cp app/build/outputs/apk/release/app-release.apk OurChess-v${input:version}-family.apk && echo 'Saved OurChess-v${input:version}-family.apk'",
+      "command": "./gradlew assembleRelease -PappVersion=${input:version} && cp app/build/outputs/apk/release/app-release.apk OurBoardGames-v${input:version}-family.apk && echo 'Saved OurBoardGames-v${input:version}-family.apk'",
       "problemMatcher": []
     },
     {
@@ -64,7 +64,7 @@
     {
       "label": "Publish release (push version tag)",
       "type": "shell",
-      "command": "git tag -a v${input:version} -m 'Our Chess v${input:version}' && git push origin v${input:version} && echo 'GitHub is now building the release: https://github.com/'$(gh repo view --json nameWithOwner -q .nameWithOwner)'/actions'",
+      "command": "git tag -a v${input:version} -m 'Our Board Games v${input:version}' && git push origin v${input:version} && echo 'GitHub is now building the release: https://github.com/'$(gh repo view --json nameWithOwner -q .nameWithOwner)'/actions'",
       "problemMatcher": []
     }
   ],

@@ -33,6 +33,13 @@ class ProfileRepositoryTest {
         assertEquals(3, a.puzzlesSolved)
         assertEquals(setOf("fork"), a.lessonsDone)
         assertEquals(settings, a.settings)
+
+        val stats = Stats().add(GameKind.CHECKERS, 2, Outcome.WON).add(GameKind.CHECKERS, 2, Outcome.LOST).add(GameKind.LUDO, 1, Outcome.WON)
+        repo.update(a.copy(stats = stats, progress = mapOf("checkers.solved" to 4)))
+        val again = ProfileRepository(file).load().first { it.id == asha.id }
+        assertEquals(stats, again.stats)
+        assertEquals(Record(won = 1, lost = 1), again.stats.total(GameKind.CHECKERS))
+        assertEquals(4, again.progress["checkers.solved"])
         assertEquals(PlayerSettings(), reloaded.first { it.id == ravi.id }.settings)
 
         repo.delete(ravi.id)

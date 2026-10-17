@@ -30,6 +30,22 @@ class SavedGameStore(private val dir: File) {
         tmp.renameTo(target)
     }
 
+    /** Free-form saved state for other games (checkers, Ludo), one per player and [slot]. */
+    fun loadText(profileId: String, slot: String): String? =
+        File(dir, "$profileId-$slot.txt").takeIf { it.exists() }?.readText()
+
+    fun saveText(profileId: String, slot: String, text: String?) {
+        dir.mkdirs()
+        val target = File(dir, "$profileId-$slot.txt")
+        if (text == null) {
+            target.delete()
+            return
+        }
+        val tmp = File(dir, target.name + ".tmp")
+        tmp.writeText(text)
+        tmp.renameTo(target)
+    }
+
     fun deleteAll(profileId: String) {
         dir.listFiles { f -> f.name.startsWith("$profileId-") }?.forEach { it.delete() }
     }
