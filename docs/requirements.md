@@ -53,6 +53,13 @@ After choosing the level, the player chooses one of:
 
 The menu also offers *My photos*, *Settings*, *Change level* and *Switch player*.
 
+### Magnifying glass
+- A round magnifying-glass button at the top-right of every screen (except the loading screen).
+- Tapping it shows **+** and **−** buttons, the current size (80% to 150%) and **Reset**.
+- It scales the whole app — text, buttons and board — and layouts re-flow to fit (nothing is cropped).
+  When zoomed in on a phone, the board stays full width and the page scrolls.
+- The zoom is remembered per player; the button itself always stays the same size.
+
 ### Settings (per player)
 Each player has their own settings, so one person's choices never affect another's:
 - **Board colours**: Green (default), Wood, Blue, **High contrast** (yellow/blue).
@@ -70,6 +77,7 @@ A preview board on the Settings screen shows the look straight away.
 ### Playing against the computer
 - Only human-vs-computer play (no two-player or online modes for now).
 - Choose to play as White or Black; the board turns around when playing Black.
+- Coordinates (1–8, a–h) are shown **outside** the board, in a strip on the left and below, so the squares stay clear.
 - Tap-to-move (tap the piece, then the square) is the default; drag-and-drop also works.
 - Legal moves are shown; the last move is highlighted; a king in check glows red.
 - The computer's move slides slowly so it is easy to follow.

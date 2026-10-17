@@ -25,15 +25,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -43,7 +41,6 @@ import com.sumesh.ourchess.game.Square
 import com.sumesh.ourchess.game.PieceType
 import com.sumesh.ourchess.game.Side
 import com.sumesh.ourchess.game.spoken
-import com.sumesh.ourchess.ui.theme.BoardPalette
 import com.sumesh.ourchess.ui.theme.LocalPlayerSettings
 import com.sumesh.ourchess.ui.theme.palette
 import androidx.compose.foundation.background
@@ -92,8 +89,10 @@ fun ChessBoard(
     val visibleTargets = if (settings.showLegalMoves || targetsAreHint) targets else emptySet()
 
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val boardSize = minOf(maxWidth, maxHeight)
-        val squareSize = boardSize / 8
+        // Rank numbers sit in a strip to the left and file letters in a strip below, outside the squares.
+        val squareSize = minOf(maxWidth, maxHeight) / (8 + COORD_GUTTER)
+        val gutter = squareSize * COORD_GUTTER
+        val boardSize = squareSize * 8
         val density = LocalDensity.current
         val squarePx = with(density) { squareSize.toPx() }
 
@@ -129,174 +128,166 @@ fun ChessBoard(
         var dragFrom by remember { mutableStateOf<Square?>(null) }
         var dragPos by remember { mutableStateOf(Offset.Zero) }
 
-        val textMeasurer = rememberTextMeasurer()
-        val coordStyle = TextStyle(
-            fontSize = with(density) { (squareSize * 0.22f).toSp() },
-            fontWeight = FontWeight.Bold,
-        )
-
-        Box(
-            Modifier
-                .size(boardSize)
-                .pointerInput(flipped, squarePx) {
-                    detectTapGestures { pos -> squareAt(pos)?.let(tap) }
+        Box(Modifier.size(boardSize + gutter)) {
+            Coordinates(flipped, squareSize, gutter)
+            Box(
+                Modifier
+                    .offset(x = gutter)
+                    .size(boardSize)
+                    .pointerInput(flipped, squarePx) {
+                        detectTapGestures { pos -> squareAt(pos)?.let(tap) }
+                    }
+                    .pointerInput(flipped, squarePx) {
+                        detectDragGestures(
+                            onDragStart = { pos ->
+                                val sq = squareAt(pos)
+                                if (sq != null && dragStart(sq)) {
+                                    dragFrom = sq
+                                    dragPos = pos
+                                }
+                            },
+                            onDrag = { change, delta ->
+                                if (dragFrom != null) {
+                                    change.consume()
+                                    dragPos += delta
+                                }
+                            },
+                            onDragEnd = {
+                                val from = dragFrom
+                                val to = squareAt(dragPos)
+                                dragFrom = null
+                                if (from != null && to != null && to != from) drop(from, to)
+                            },
+                            onDragCancel = { dragFrom = null },
+                        )
+                    },
+            ) {
+                Canvas(Modifier.size(boardSize)) {
+                    val sqSize = Size(squarePx, squarePx)
+                    for (sq in Square.all) {
+                        val tl = topLeft(sq)
+                        drawRect(if (sq.isLight) palette.lightSquare else palette.darkSquare, tl, sqSize)
+                        if (lastMove != null && (sq == lastMove.from || sq == lastMove.to)) {
+                            drawRect(palette.lastMove.copy(alpha = if (sq.isLight) 0.6f else 0.75f), tl, sqSize)
+                        }
+                        if (sq == selected) {
+                            drawRect(palette.selected.copy(alpha = 0.45f), tl, sqSize)
+                            val inset = squarePx * 0.05f
+                            drawRect(
+                                palette.selected,
+                                tl + Offset(inset / 2, inset / 2),
+                                Size(squarePx - inset, squarePx - inset),
+                                style = Stroke(inset),
+                            )
+                        }
+                        if (sq == checkSquare) {
+                            drawRect(
+                                Brush.radialGradient(
+                                    listOf(palette.check, palette.check.copy(alpha = 0f)),
+                                    center = tl + Offset(squarePx / 2, squarePx / 2),
+                                    radius = squarePx * 0.7f,
+                                ),
+                                tl, sqSize,
+                            )
+                        }
+                    }
+                    for (sq in visibleTargets) {
+                        val center = topLeft(sq) + Offset(squarePx / 2, squarePx / 2)
+                        if (pieces.containsKey(sq)) {
+                            // Capture: a thick ring around the piece.
+                            val w = squarePx * 0.09f
+                            drawCircle(palette.target, radius = squarePx / 2 - w / 2, center = center, style = Stroke(w))
+                        } else {
+                            drawCircle(palette.target, radius = squarePx * 0.17f, center = center)
+                        }
+                    }
                 }
-                .pointerInput(flipped, squarePx) {
-                    detectDragGestures(
-                        onDragStart = { pos ->
-                            val sq = squareAt(pos)
-                            if (sq != null && dragStart(sq)) {
-                                dragFrom = sq
-                                dragPos = pos
-                            }
-                        },
-                        onDrag = { change, delta ->
-                            if (dragFrom != null) {
-                                change.consume()
-                                dragPos += delta
-                            }
-                        },
-                        onDragEnd = {
-                            val from = dragFrom
-                            val to = squareAt(dragPos)
-                            dragFrom = null
-                            if (from != null && to != null && to != from) drop(from, to)
-                        },
-                        onDragCancel = { dragFrom = null },
+
+                for ((sq, piece) in pieces) {
+                    if (sq == dragFrom) continue
+                    var pos = topLeft(sq)
+                    if (animation != null && sq == animation.to && animProgress < 1f) {
+                        val from = topLeft(animation.from)
+                        pos = from + (pos - from) * animProgress
+                    }
+                    PieceView(
+                        piece,
+                        settings.largePrint,
+                        Modifier
+                            .offset { IntOffset(pos.x.roundToInt(), pos.y.roundToInt()) }
+                            .size(squareSize)
+                            .zIndex(if (sq == animation?.to) 1f else 0f),
                     )
-                },
-        ) {
-            Canvas(Modifier.size(boardSize)) {
-                val sqSize = Size(squarePx, squarePx)
+                }
+
+                // Invisible per-square nodes so TalkBack can read and operate the board.
                 for (sq in Square.all) {
                     val tl = topLeft(sq)
-                    drawRect(if (sq.isLight) palette.lightSquare else palette.darkSquare, tl, sqSize)
-                    if (lastMove != null && (sq == lastMove.from || sq == lastMove.to)) {
-                        drawRect(palette.lastMove.copy(alpha = if (sq.isLight) 0.6f else 0.75f), tl, sqSize)
+                    val piece = pieces[sq]
+                    val description = buildString {
+                        append(sq.name)
+                        append(", ")
+                        append(piece?.spoken() ?: "empty")
+                        if (sq == selected) append(", selected")
+                        if (sq in visibleTargets) append(", you can move here")
                     }
-                    if (sq == selected) {
-                        drawRect(palette.selected.copy(alpha = 0.45f), tl, sqSize)
-                        val inset = squarePx * 0.05f
-                        drawRect(
-                            palette.selected,
-                            tl + Offset(inset / 2, inset / 2),
-                            Size(squarePx - inset, squarePx - inset),
-                            style = Stroke(inset),
-                        )
-                    }
-                    if (sq == checkSquare) {
-                        drawRect(
-                            Brush.radialGradient(
-                                listOf(palette.check, palette.check.copy(alpha = 0f)),
-                                center = tl + Offset(squarePx / 2, squarePx / 2),
-                                radius = squarePx * 0.7f,
-                            ),
-                            tl, sqSize,
-                        )
-                    }
+                    Box(
+                        Modifier
+                            .offset { IntOffset(tl.x.roundToInt(), tl.y.roundToInt()) }
+                            .size(squareSize)
+                            .clearAndSetSemantics {
+                                contentDescription = description
+                                onClick { tap(sq); true }
+                            },
+                    )
                 }
-                drawCoordinates(flipped, squarePx, textMeasurer, coordStyle, palette)
-                for (sq in visibleTargets) {
-                    val center = topLeft(sq) + Offset(squarePx / 2, squarePx / 2)
-                    if (pieces.containsKey(sq)) {
-                        // Capture: a thick ring around the piece.
-                        val w = squarePx * 0.09f
-                        drawCircle(palette.target, radius = squarePx / 2 - w / 2, center = center, style = Stroke(w))
-                    } else {
-                        drawCircle(palette.target, radius = squarePx * 0.17f, center = center)
-                    }
-                }
-            }
 
-            for ((sq, piece) in pieces) {
-                if (sq == dragFrom) continue
-                var pos = topLeft(sq)
-                if (animation != null && sq == animation.to && animProgress < 1f) {
-                    val from = topLeft(animation.from)
-                    pos = from + (pos - from) * animProgress
+                // The dragged piece follows the finger, slightly enlarged and lifted so it isn't hidden by it.
+                dragFrom?.let { from ->
+                    val piece = pieces[from] ?: return@let
+                    val scale = 1.3f
+                    val half = squarePx * scale / 2
+                    PieceView(
+                        piece,
+                        settings.largePrint,
+                        Modifier
+                            .offset {
+                                IntOffset((dragPos.x - half).roundToInt(), (dragPos.y - half * 1.6f).roundToInt())
+                            }
+                            .size(squareSize * scale)
+                            .zIndex(2f),
+                    )
                 }
-                PieceView(
-                    piece,
-                    settings.largePrint,
-                    Modifier
-                        .offset { IntOffset(pos.x.roundToInt(), pos.y.roundToInt()) }
-                        .size(squareSize)
-                        .zIndex(if (sq == animation?.to) 1f else 0f),
-                )
-            }
-
-            // Invisible per-square nodes so TalkBack can read and operate the board.
-            for (sq in Square.all) {
-                val tl = topLeft(sq)
-                val piece = pieces[sq]
-                val description = buildString {
-                    append(sq.name)
-                    append(", ")
-                    append(piece?.spoken() ?: "empty")
-                    if (sq == selected) append(", selected")
-                    if (sq in visibleTargets) append(", you can move here")
-                }
-                Box(
-                    Modifier
-                        .offset { IntOffset(tl.x.roundToInt(), tl.y.roundToInt()) }
-                        .size(squareSize)
-                        .clearAndSetSemantics {
-                            contentDescription = description
-                            onClick { tap(sq); true }
-                        },
-                )
-            }
-
-            // The dragged piece follows the finger, slightly enlarged and lifted so it isn't hidden by it.
-            dragFrom?.let { from ->
-                val piece = pieces[from] ?: return@let
-                val scale = 1.3f
-                val half = squarePx * scale / 2
-                PieceView(
-                    piece,
-                    settings.largePrint,
-                    Modifier
-                        .offset {
-                            IntOffset((dragPos.x - half).roundToInt(), (dragPos.y - half * 1.6f).roundToInt())
-                        }
-                        .size(squareSize * scale)
-                        .zIndex(2f),
-                )
             }
         }
     }
 }
 
-/** File letters along the bottom edge and rank numbers along the left edge, inside the squares. */
-private fun DrawScope.drawCoordinates(
-    flipped: Boolean,
-    squarePx: Float,
-    textMeasurer: androidx.compose.ui.text.TextMeasurer,
-    style: TextStyle,
-    palette: BoardPalette,
-) {
-    // Coordinates use the opposite square colour so they stay readable.
-    fun coordColor(sq: Square): Color = if (sq.isLight) palette.textOnLight else palette.textOnDark
-    val pad = squarePx * 0.05f
+/** Rank numbers down the left and file letters along the bottom, outside the board, honouring orientation. */
+@Composable
+private fun Coordinates(flipped: Boolean, squareSize: Dp, gutter: Dp) {
+    // Sized from the square (not the system font size) so the labels always fit their strip.
+    val style = TextStyle(
+        fontSize = with(LocalDensity.current) { (squareSize * 0.32f).toSp() },
+        fontWeight = FontWeight.Bold,
+        color = Color(0xFF4A4A4A),
+    )
     for (i in 0..7) {
-        // Bottom row: files
-        val file = if (flipped) 7 - i else i
-        val bottomSq = Square(file, if (flipped) 7 else 0)
-        val fileText = textMeasurer.measure(('a' + file).toString(), style.copy(color = coordColor(bottomSq)))
-        drawText(
-            fileText,
-            topLeft = Offset(
-                (i + 1) * squarePx - fileText.size.width - pad,
-                8 * squarePx - fileText.size.height - pad * 0.3f,
-            ),
-        )
-        // Left column: ranks
-        val rank = if (flipped) i else 7 - i
-        val leftSq = Square(if (flipped) 7 else 0, rank)
-        val rankText = textMeasurer.measure((rank + 1).toString(), style.copy(color = coordColor(leftSq)))
-        drawText(rankText, topLeft = Offset(pad, i * squarePx + pad * 0.3f))
+        val rank = if (flipped) i + 1 else 8 - i
+        Box(Modifier.offset(y = squareSize * i).size(gutter, squareSize), contentAlignment = Alignment.Center) {
+            Text(rank.toString(), style = style)
+        }
+        val file = 'a' + (if (flipped) 7 - i else i)
+        Box(
+            Modifier.offset(x = gutter + squareSize * i, y = squareSize * 8).size(squareSize, gutter),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(file.toString(), style = style)
+        }
     }
 }
+
+private const val COORD_GUTTER = 0.45f
 
 /**
  * One piece. In large print, a letter badge (K, Q, R, B, N) in the corner names it.

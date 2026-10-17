@@ -22,7 +22,7 @@ class ProfileRepositoryTest {
 
         val asha = repo.create("  Asha ")
         val ravi = repo.create("Ravi")
-        val settings = PlayerSettings(boardTheme = BoardTheme.HIGH_CONTRAST, largePrint = true, speakMoves = true)
+        val settings = PlayerSettings(boardTheme = BoardTheme.HIGH_CONTRAST, largePrint = true, speakMoves = true, zoom = 1.3f)
         repo.update(asha.copy(level = 4, nextPuzzle = mapOf(4 to 7), puzzlesSolved = 3, lessonsDone = setOf("fork"), settings = settings))
 
         val reloaded = ProfileRepository(file).load()

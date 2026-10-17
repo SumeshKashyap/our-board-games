@@ -11,12 +11,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-/** Colours for one board theme. Text colours are for the coordinates drawn on each square colour. */
+/** Colours for one board theme. */
 data class BoardPalette(
     val lightSquare: Color,
     val darkSquare: Color,
-    val textOnLight: Color,
-    val textOnDark: Color,
     val lastMove: Color,
     val selected: Color,
     val target: Color,
@@ -27,23 +25,19 @@ fun BoardTheme.palette(): BoardPalette = when (this) {
     // Calm, low-glare default tuned for older eyes.
     BoardTheme.GREEN -> BoardPalette(
         lightSquare = Color(0xFFF0E6CC), darkSquare = Color(0xFF7A9A6A),
-        textOnLight = Color(0xFF4F6B42), textOnDark = Color(0xFFF0E6CC),
         lastMove = Color(0xFFF2CF3B), selected = Color(0xFF2F6FD0), target = Color(0x99223344),
     )
     BoardTheme.WOOD -> BoardPalette(
         lightSquare = Color(0xFFF0D9B5), darkSquare = Color(0xFFB58863),
-        textOnLight = Color(0xFF8B6340), textOnDark = Color(0xFFF0D9B5),
         lastMove = Color(0xFFF5D547), selected = Color(0xFF2F6FD0), target = Color(0x99302010),
     )
     BoardTheme.BLUE -> BoardPalette(
         lightSquare = Color(0xFFDEE3E6), darkSquare = Color(0xFF8CA2AD),
-        textOnLight = Color(0xFF5D7380), textOnDark = Color(0xFFDEE3E6),
         lastMove = Color(0xFFF2CF3B), selected = Color(0xFF1B5E20), target = Color(0x99102030),
     )
     // Strong yellow/blue contrast for weaker eyesight; black pieces stay clear on the blue.
     BoardTheme.HIGH_CONTRAST -> BoardPalette(
         lightSquare = Color(0xFFFFF4A8), darkSquare = Color(0xFF4A7BC8),
-        textOnLight = Color(0xFF1A1A1A), textOnDark = Color(0xFFFFFFFF),
         lastMove = Color(0xFFFF8A00), selected = Color(0xFFD50000), target = Color(0xCC000000),
     )
 }

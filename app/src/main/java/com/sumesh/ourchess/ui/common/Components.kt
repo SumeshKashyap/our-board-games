@@ -104,7 +104,8 @@ fun ScreenHeader(title: String, onBack: (() -> Unit)?, backLabel: String = "Back
             }
             Spacer(Modifier.width(12.dp))
         }
-        Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+        // Room on the right for the magnifying glass.
+        Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f).padding(end = 60.dp))
     }
 }
 
@@ -140,17 +141,20 @@ fun BigButton(
 
 /**
  * Action buttons: side by side in portrait, stacked in the narrow landscape side panel —
- * and always stacked when the system text size is large, so labels never get squeezed.
+ * and also stacked whenever there isn't room (large system text, or zoomed in on a phone),
+ * so labels never get squeezed.
  */
 @Composable
 fun ButtonGroup(stacked: Boolean, content: @Composable (Modifier) -> Unit) {
-    if (stacked || LocalDensity.current.fontScale >= 1.3f) {
-        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            content(Modifier.fillMaxWidth())
-        }
-    } else {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            content(Modifier.weight(1f))
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        if (stacked || LocalDensity.current.fontScale >= 1.3f || maxWidth < 380.dp) {
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                content(Modifier.fillMaxWidth())
+            }
+        } else {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                content(Modifier.weight(1f))
+            }
         }
     }
 }
@@ -227,8 +231,8 @@ fun BoardScreenLayout(
                         actions(true)
                     }
                 }
-            } else if (LocalDensity.current.fontScale >= 1.3f) {
-                // Large text: keep the board full width and let the page scroll, rather than shrinking the board.
+            } else if (LocalDensity.current.fontScale >= 1.3f || maxWidth < 380.dp) {
+                // Large text or zoomed in: keep the board full width and let the page scroll, rather than shrinking the board.
                 Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     header()
                     info()

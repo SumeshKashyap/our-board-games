@@ -37,6 +37,8 @@ Stockfish 19 opponent tuned per level, Hint button in games, natural "thinking" 
 - Optional move sounds, vibration, and reading moves aloud ("Computer: knight to f3, check")
 - TalkBack: every square is described and can be tapped
 - Every screen checked at 130% and 200% system font size
+- Board coordinates moved outside the squares
+- Magnifying glass to zoom the whole app in or out (80–150%), remembered per player
 
 ## Ideas for later
 - Two players on one device

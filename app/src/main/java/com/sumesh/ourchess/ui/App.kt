@@ -9,7 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import com.sumesh.ourchess.ui.common.Magnifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sumesh.ourchess.data.PlayerSettings
 import com.sumesh.ourchess.engine.Engines
@@ -33,9 +40,24 @@ import com.sumesh.ourchess.ui.welcome.WelcomeScreen
 @Composable
 fun App(app: AppViewModel = viewModel()) {
     BackHandler(enabled = app.canGoBack) { app.back() }
-    // Every screen follows the current player's settings (board colours, large print, …).
-    CompositionLocalProvider(LocalPlayerSettings provides (app.current?.settings ?: PlayerSettings())) {
-        CurrentScreen(app)
+    val base = LocalDensity.current
+    Box(Modifier.fillMaxSize()) {
+        // Every screen follows the current player's settings (board colours, large print, …),
+        // and the magnifier's zoom scales everything (a larger density re-flows layouts rather than cropping).
+        CompositionLocalProvider(
+            LocalPlayerSettings provides (app.current?.settings ?: PlayerSettings()),
+            LocalDensity provides Density(base.density * app.zoom, base.fontScale),
+        ) {
+            CurrentScreen(app)
+        }
+        // Outside the zoom, so the magnifier itself always stays the same size and place.
+        if (app.screen != Screen.Loading) {
+            Magnifier(
+                zoom = app.zoom,
+                onZoom = app::setZoom,
+                modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding().padding(12.dp),
+            )
+        }
     }
 }
 

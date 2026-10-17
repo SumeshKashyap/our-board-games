@@ -2,7 +2,9 @@ package com.sumesh.ourchess.ui
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.sumesh.ourchess.data.BoardTheme
 import com.sumesh.ourchess.data.PlayerSettings
@@ -108,6 +110,17 @@ class ScreenshotTest {
 
     @Test @Config(qualifiers = TABLET, fontScale = 2.0f)
     fun puzzleTabletHugeText() { app { withPlayers(); open(Screen.Puzzles) }; capture("26_puzzle_tablet_font200") }
+
+    @Test fun magnifierOpenGameZoomed() {
+        app { withPlayers(); setZoom(1.3f); open(Screen.Game) }
+        compose.onNodeWithContentDescription("Zoom").performClick()
+        capture("15_game_zoom130_magnifier")
+    }
+
+    @Test fun menuZoomedMost() { app { withPlayers(); setZoom(1.5f) }; capture("16_menu_zoom150") }
+
+    @Test @Config(qualifiers = TABLET)
+    fun gameTabletZoomed() { app { withPlayers(); setZoom(1.3f); open(Screen.Game) }; capture("17_game_tablet_zoom130") }
 
     @Test fun photos() { app { withPlayers(); open(Screen.Photos) }; capture("12_photos") }
 

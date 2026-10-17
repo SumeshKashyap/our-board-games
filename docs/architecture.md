@@ -82,9 +82,16 @@ played (not for undo). `MoveFeedback` watches the id and plays the enabled feedb
 (`res/raw/move.wav`, `capture.wav`), a vibration, and/or speech. The move already on screen when a screen opens is
 not replayed.
 
+### Zoom (magnifying glass)
+`App` multiplies the screen density by the player's zoom (`LocalDensity provides Density(density × zoom, …)`), so
+every dp — text, buttons, board — scales together and layouts re-flow instead of being cropped. The `Magnifier`
+is drawn outside that provider so it keeps a constant size. Zoom is stored in `PlayerSettings.zoom`
+(steps in `ZOOM_STEPS`); on the welcome screen the most recent player's zoom applies.
+
 ### Large text
-`ButtonGroup` stacks buttons when the system font scale is 130% or more; `BoardScreenLayout` then keeps the board
-full width and scrolls the page instead of shrinking the board. Text drawn on the board (coordinates, large-print
+`ButtonGroup` stacks buttons when the system font scale is 130% or more or the screen is narrower than 380 dp
+(e.g. a zoomed-in phone); `BoardScreenLayout` then keeps the board full width and scrolls the page instead of
+shrinking the board. Text drawn on the board (coordinates, large-print
 letters) is sized from the square, not the font scale, so it always fits.
 
 ### The board

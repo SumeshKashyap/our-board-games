@@ -2,6 +2,9 @@ package com.sumesh.ourchess.data
 
 import org.json.JSONObject
 
+/** The sizes the magnifying glass steps through. */
+val ZOOM_STEPS = listOf(0.8f, 0.9f, 1f, 1.15f, 1.3f, 1.5f)
+
 enum class BoardTheme(val label: String) {
     GREEN("Green"),
     WOOD("Wood"),
@@ -21,6 +24,8 @@ data class PlayerSettings(
     val sounds: Boolean = false,
     val vibration: Boolean = false,
     val speakMoves: Boolean = false,
+    /** Size of everything on screen, set with the magnifying glass (1 = normal). */
+    val zoom: Float = 1f,
 ) {
     fun toJson(): JSONObject = JSONObject()
         .put("boardTheme", boardTheme.name)
@@ -31,6 +36,7 @@ data class PlayerSettings(
         .put("sounds", sounds)
         .put("vibration", vibration)
         .put("speakMoves", speakMoves)
+        .put("zoom", zoom.toDouble())
 
     companion object {
         fun fromJson(json: JSONObject?): PlayerSettings {
@@ -45,6 +51,7 @@ data class PlayerSettings(
                 sounds = json.optBoolean("sounds", d.sounds),
                 vibration = json.optBoolean("vibration", d.vibration),
                 speakMoves = json.optBoolean("speakMoves", d.speakMoves),
+                zoom = json.optDouble("zoom", d.zoom.toDouble()).toFloat().coerceIn(ZOOM_STEPS.first(), ZOOM_STEPS.last()),
             )
         }
     }

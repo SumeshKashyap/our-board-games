@@ -20,7 +20,8 @@ Play against the computer at five difficulty levels, solve puzzles, and learn us
 - **Learn moves**: interactive lessons on castling, promotion, en passant, forks, pins, skewers and back-rank mate.
 - **Forgiving**: unlimited undo, a hint button, no clock, optional "ask before each move", and games are saved automatically.
 - **Settings for each player**: board colours (including high contrast), large-print letters on pieces, move sounds, vibration, and moves read aloud.
-- **Accessible**: works with large system text (up to 200%) and with TalkBack.
+- **Magnifying glass**: zoom the whole app in or out with one tap; each player's size is remembered.
+- **Accessible**: works with large system text (up to 200%) and with TalkBack; board coordinates sit outside the squares.
 - **Works on phones and tablets**, in portrait and landscape.
 
 ## Install

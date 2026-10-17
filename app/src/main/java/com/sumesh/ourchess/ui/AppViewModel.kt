@@ -154,6 +154,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         current = save(profile.copy(lessonsDone = profile.lessonsDone + id))
     }
 
+    /** Zoom chosen before a player is picked (not saved); otherwise the most recent player's. */
+    private var guestZoom by mutableStateOf<Float?>(null)
+
+    /** How big everything is drawn: the current player's choice, or the most recent player's on the welcome screen. */
+    val zoom: Float
+        get() = current?.settings?.zoom ?: guestZoom ?: profiles.firstOrNull()?.settings?.zoom ?: 1f
+
+    fun setZoom(zoom: Float) {
+        val profile = current
+        if (profile == null) guestZoom = zoom else updateSettings(profile.settings.copy(zoom = zoom))
+    }
+
     fun updateSettings(settings: PlayerSettings) {
         val profile = current ?: return
         current = save(profile.copy(settings = settings))
